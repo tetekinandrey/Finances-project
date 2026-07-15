@@ -1,0 +1,55 @@
+import type { AppState, Habit } from './types'
+
+export const uid = (): string =>
+  'id-' + Math.random().toString(36).slice(2, 10)
+
+const defaultHabits: Habit[] = [
+  {
+    id: 'coffee',
+    name: 'Coffee out',
+    emoji: '☕',
+    value: 4,
+    savePrompt: 'Skipped buying coffee today?',
+    indulgePrompt: 'Enjoyed a coffee — was it worth it?',
+    active: true,
+  },
+  {
+    id: 'eatout',
+    name: 'Eating out',
+    emoji: '🍽️',
+    value: 10,
+    savePrompt: 'Cooked at home instead of eating out?',
+    indulgePrompt: 'Ate out today — was it worth it?',
+    active: true,
+  },
+  {
+    id: 'transport',
+    name: 'U-Bahn ticket',
+    emoji: '🚇',
+    value: 2.9,
+    savePrompt: 'Walked or biked instead of buying a ticket?',
+    indulgePrompt: 'Took the U-Bahn — was it worth it?',
+    active: true,
+  },
+  {
+    id: 'groceries',
+    name: 'Smart groceries',
+    emoji: '🛒',
+    value: 10,
+    savePrompt: 'Shopped at Lidl / Aldi / Penny instead of Rewe / Edeka?',
+    indulgePrompt: 'Shopped at the pricey store — was it worth it?',
+    active: true,
+  },
+]
+
+export const defaultState: AppState = {
+  goal: {
+    name: 'Leica M6',
+    imageUrl: '',
+    emoji: '📷',
+    targetPrice: 3000,
+  },
+  habits: defaultHabits,
+  entries: [],
+  penalizeIndulgence: true,
+}

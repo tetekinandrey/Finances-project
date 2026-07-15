@@ -1,0 +1,289 @@
+/* Goal hero -------------------------------------------------- */
+.goal-hero {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, #1c2634, #12181f);
+  border: 1px solid var(--line);
+}
+.goal-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.goal-hero-emoji {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 92px;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+.goal-hero-emoji.small {
+  position: static;
+  font-size: 44px;
+  width: 64px;
+  height: 64px;
+}
+.goal-hero-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px;
+  background: linear-gradient(0deg, rgba(8, 11, 15, 0.9), transparent);
+}
+.goal-hero-overlay h1 {
+  font-size: 26px;
+  margin: 6px 0 2px;
+}
+
+/* Ring card -------------------------------------------------- */
+.ring-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-amount {
+  font-size: 32px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+.rem-line {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.rem-amount {
+  font-weight: 700;
+  font-size: 18px;
+}
+.unlocked-banner {
+  width: 100%;
+  text-align: center;
+  font-weight: 650;
+  color: var(--accent);
+  background: #34d3991a;
+  border: 1px solid #34d39944;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* Vault ------------------------------------------------------ */
+.vault {
+  padding: 14px 16px;
+}
+
+/* Stat grid -------------------------------------------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.stat {
+  padding: 16px;
+}
+.stat-num {
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+.stat-unit {
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 5px;
+  font-weight: 600;
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.etaline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  padding: 14px 16px;
+}
+.etaline strong {
+  font-size: 16px;
+}
+
+/* Check-in --------------------------------------------------- */
+.checkin-head {
+  padding: 4px 4px 0;
+}
+.checkin-head h2 {
+  font-size: 24px;
+}
+.checkin-summary {
+  padding: 14px 16px;
+}
+.checkin-total {
+  font-size: 20px;
+  font-weight: 750;
+}
+.progress-track {
+  height: 8px;
+  background: var(--bg-elev);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.habit-card {
+  padding: 16px;
+}
+.habit-emoji {
+  font-size: 26px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--bg-elev);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.habit-answered {
+  padding: 14px 16px;
+  border-left: 3px solid var(--line);
+}
+.habit-answered.good {
+  border-left-color: var(--accent);
+}
+.habit-answered.treat {
+  border-left-color: var(--gold);
+}
+.treat-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 15px;
+}
+.done-banner {
+  text-align: center;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Habit editor ----------------------------------------------- */
+.habit-editor.inactive {
+  opacity: 0.55;
+}
+.editor-body {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.penalize-toggle {
+  padding: 14px 16px;
+}
+
+/* Toggle ----------------------------------------------------- */
+.toggle {
+  width: 46px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: transform 0.2s, background 0.2s;
+}
+.toggle.on {
+  background: #34d39933;
+  border-color: var(--accent-2);
+}
+.toggle.on .knob {
+  transform: translateX(18px);
+  background: var(--accent);
+}
+
+/* Goal settings ---------------------------------------------- */
+.goal-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.goal-preview img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* History ---------------------------------------------------- */
+.empty {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 18px;
+}
+.day-row {
+  padding: 14px 16px;
+}
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+}
+.chip.good {
+  color: var(--accent);
+  border-color: #34d39944;
+}
+.chip.treat {
+  color: var(--gold);
+  border-color: #f4c76b44;
+}
+.spark {
+  width: 100%;
+  height: 90px;
+  display: block;
+}
