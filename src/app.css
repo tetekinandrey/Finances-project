@@ -157,6 +157,74 @@
   border-radius: var(--radius-sm);
   padding: 14px;
 }
+/* State simulator (demo tool) ------------------------------ */
+.sim {
+  position: fixed;
+  right: 16px;
+  bottom: 84px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.sim-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+}
+.sim-fab.open {
+  background: var(--card);
+}
+.sim-menu {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 8px;
+  width: 220px;
+}
+.sim-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  padding: 6px 8px 8px;
+}
+.sim-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.sim-item:hover {
+  background: var(--bg-elev);
+}
+.sim-ico {
+  font-size: 18px;
+  width: 26px;
+  text-align: center;
+}
+.sim-item-label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+.sim-item-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* Chain / wallet ------------------------------------------- */
 .wallet-list {
   display: flex;

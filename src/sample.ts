@@ -1,5 +1,6 @@
-import type { AppState, DayEntry } from './types'
+import type { AppState, Account, DayEntry } from './types'
 import { todayISO } from './logic'
+import { DEMO_ADDRESS, defaultState, mockBalanceFor } from './seed'
 
 /**
  * Deterministic-ish sample history for demoing the flow.
@@ -37,4 +38,34 @@ export function makeSampleHistory(state: AppState): AppState {
   }
 
   return { ...state, entries }
+}
+
+// --- State simulator presets -------------------------------------------------
+
+const demoAccount = (): Account => ({
+  address: DEMO_ADDRESS,
+  label: 'Demo account',
+  connected: true,
+  balance: mockBalanceFor(DEMO_ADDRESS),
+  balanceChecked: true,
+})
+
+/** First-run: the onboarding wizard. */
+export function onboardingState(): AppState {
+  return { ...defaultState, onboarded: false }
+}
+
+/** Set up, connected, but nothing saved yet. */
+export function freshHomeState(): AppState {
+  return {
+    ...defaultState,
+    onboarded: true,
+    entries: [],
+    account: demoAccount(),
+  }
+}
+
+/** Set up with two weeks of progress banked. */
+export function savedState(): AppState {
+  return makeSampleHistory(freshHomeState())
 }

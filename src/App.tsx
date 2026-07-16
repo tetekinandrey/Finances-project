@@ -7,6 +7,7 @@ import GoalSettings from './components/GoalSettings'
 import History from './components/History'
 import Onboarding from './components/Onboarding'
 import Chain from './components/Chain'
+import StateSimulator from './components/StateSimulator'
 import { shortAddress } from './seed'
 import './app.css'
 
@@ -33,7 +34,13 @@ function Shell() {
   const { state } = useStore()
   const [tab, setTab] = useState<Tab>('home')
 
-  if (!state.onboarded) return <Onboarding />
+  if (!state.onboarded)
+    return (
+      <>
+        <Onboarding />
+        <StateSimulator setTab={(t) => setTab(t as Tab)} />
+      </>
+    )
 
   return (
     <>
@@ -72,6 +79,8 @@ function Shell() {
           ))}
         </div>
       </nav>
+
+      <StateSimulator setTab={(t) => setTab(t as Tab)} />
     </>
   )
 }
