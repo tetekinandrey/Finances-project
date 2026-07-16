@@ -52,6 +52,16 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         )}
       </div>
 
+      {/* Coffees to skip until the goal */}
+      {!unlocked && coffee && (
+        <div className="card coffee-goal">
+          <span className="coffee-goal-num">{est.skipsToGoal(coffee)}</span>
+          <span className="coffee-goal-label">
+            {coffee.emoji} coffees to skip to reach {state.goal.name}
+          </span>
+        </div>
+      )}
+
       {/* Collapsible estimates */}
       {!unlocked && (
         <div className="card details">
@@ -65,22 +75,9 @@ export default function Home({ go }: { go: (tab: string) => void }) {
           </button>
           {showDetails && (
             <div className="details-body fade-in">
-              <div className="stat-grid">
-                {coffee && (
-                  <div className="stat compact bare">
-                    <div className="stat-num">{est.skipsToGoal(coffee)}</div>
-                    <div className="stat-label">
-                      {coffee.emoji} coffees to skip
-                    </div>
-                  </div>
-                )}
-                <div className="stat compact bare">
-                  <div className="stat-num">
-                    {est.daysAtPotential ?? '—'}
-                    <span className="stat-unit">days</span>
-                  </div>
-                  <div className="stat-label">at your best pace</div>
-                </div>
+              <div className="row between details-eta" style={{ border: 'none', paddingTop: 0, marginTop: 0 }}>
+                <span className="muted">At your best pace</span>
+                <strong>{est.daysAtPotential ?? '—'} days</strong>
               </div>
               {potential > 0 && etaDate && (
                 <div className="row between details-eta">

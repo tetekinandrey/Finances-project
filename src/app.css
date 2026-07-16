@@ -296,6 +296,26 @@
   margin-top: 10px;
 }
 
+/* Coffees-to-skip card */
+.coffee-goal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+.coffee-goal-num {
+  font-size: 34px;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.coffee-goal-label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
 /* Goal title above the ring */
 .goal-title {
   text-align: center;

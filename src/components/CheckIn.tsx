@@ -26,36 +26,11 @@ export function CheckInSection() {
     entry?.actions.map((a) => [a.habitId, a]) ?? [],
   )
 
-  const todayTotal = entry?.actions.reduce((s, a) => s + a.amount, 0) ?? 0
   const doneCount = answers.size
   const allDone = doneCount === active.length && active.length > 0
 
   return (
     <>
-      <div className="card checkin-summary">
-        <div className="row between">
-          <span className="muted">Banked today</span>
-          <span
-            className="checkin-total"
-            style={{ color: todayTotal >= 0 ? 'var(--accent)' : 'var(--danger)' }}
-          >
-            {todayTotal >= 0 ? '+' : ''}
-            {eur(todayTotal)}
-          </span>
-        </div>
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${active.length ? (doneCount / active.length) * 100 : 0}%`,
-            }}
-          />
-        </div>
-        <div className="faint" style={{ fontSize: 12 }}>
-          {doneCount}/{active.length} answered
-        </div>
-      </div>
-
       {active.map((h) => (
         <HabitCard
           key={h.id}
