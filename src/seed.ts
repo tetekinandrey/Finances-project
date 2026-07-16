@@ -52,4 +52,12 @@ export const defaultState: AppState = {
   habits: defaultHabits,
   entries: [],
   penalizeIndulgence: true,
+  account: { address: '', label: '', connected: false },
+  onboarded: false,
 }
+
+/** A well-known Polkadot test address, used for the "demo account" button. */
+export const DEMO_ADDRESS = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+
+export const shortAddress = (a: string): string =>
+  a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a

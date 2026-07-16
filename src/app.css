@@ -84,6 +84,107 @@
   color: var(--muted);
 }
 
+/* Connected account pill */
+.pill.connected {
+  color: var(--accent);
+  border-color: #34d39944;
+  background: #34d39914;
+}
+
+/* Onboarding ------------------------------------------------- */
+.onboarding {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+.onb-inner {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+.onb-dots {
+  display: flex;
+  gap: 6px;
+  padding: 4px 4px 20px;
+}
+.onb-dot {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background 0.3s;
+}
+.onb-dot.on {
+  background: var(--accent);
+}
+.onb-title {
+  font-size: 27px;
+  letter-spacing: -0.03em;
+}
+.onb-sub {
+  margin: 8px 0 20px;
+  font-size: 15px;
+}
+.onb-body {
+  display: flex;
+  flex-direction: column;
+}
+.onb-preview {
+  height: 140px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(135deg, #1c2634, #12181f);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+}
+.onb-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.onb-preview-emoji {
+  font-size: 66px;
+}
+.onb-account-card {
+  margin-top: 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.onb-review-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.onb-note {
+  font-size: 13px;
+  margin-top: 18px;
+  line-height: 1.5;
+}
+.onb-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 calc(18px + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, var(--bg) 70%, transparent);
+}
+.onb-actions .btn.primary {
+  min-width: 150px;
+}
+
 /* Goal title above the ring */
 .goal-title {
   text-align: center;

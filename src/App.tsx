@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { StoreProvider } from './store'
+import { StoreProvider, useStore } from './store'
 import Home from './components/Home'
 import CheckIn from './components/CheckIn'
 import Habits from './components/Habits'
 import GoalSettings from './components/GoalSettings'
 import History from './components/History'
+import Onboarding from './components/Onboarding'
+import { shortAddress } from './seed'
 import './app.css'
 
 type Tab = 'home' | 'checkin' | 'history' | 'habits' | 'goal'
@@ -18,17 +20,32 @@ const NAV: { id: Tab; label: string; ico: string }[] = [
 ]
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('home')
-
   return (
     <StoreProvider>
+      <Shell />
+    </StoreProvider>
+  )
+}
+
+function Shell() {
+  const { state } = useStore()
+  const [tab, setTab] = useState<Tab>('home')
+
+  if (!state.onboarded) return <Onboarding />
+
+  return (
+    <>
       <div className="app">
         <div className="topbar">
           <div className="brand">
             <span className="dot" />
             Vault
           </div>
-          <span className="pill">Polkadot · testnet soon</span>
+          <span className={`pill ${state.account.connected ? 'connected' : ''}`}>
+            {state.account.connected
+              ? `🔗 ${shortAddress(state.account.address)}`
+              : 'Polkadot · testnet soon'}
+          </span>
         </div>
 
         {tab === 'home' && <Home go={(t) => setTab(t as Tab)} />}
@@ -52,6 +69,6 @@ export default function App() {
           ))}
         </div>
       </nav>
-    </StoreProvider>
+    </>
   )
 }

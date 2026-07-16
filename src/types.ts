@@ -25,6 +25,17 @@ export interface Goal {
   targetPrice: number
 }
 
+/**
+ * The funding account. Today it holds a pasted/demo address; in phase 2 this
+ * maps to a real Polkadot account. Saved funds move from here into a locked,
+ * per-goal "item vault".
+ */
+export interface Account {
+  address: string
+  label: string
+  connected: boolean
+}
+
 /** One answered habit on a given day. */
 export interface DayAction {
   habitId: string
@@ -49,4 +60,8 @@ export interface AppState {
   entries: DayEntry[]
   /** How treating yourself affects the plan. */
   penalizeIndulgence: boolean
+  /** Funding account (main account → locked item vault). */
+  account: Account
+  /** Whether the first-run setup wizard has been completed. */
+  onboarded: boolean
 }

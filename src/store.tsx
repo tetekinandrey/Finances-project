@@ -5,7 +5,7 @@ import {
   useReducer,
   type ReactNode,
 } from 'react'
-import type { AppState, DayAction, Goal, Habit } from './types'
+import type { Account, AppState, DayAction, Goal, Habit } from './types'
 import { defaultState } from './seed'
 import { findEntry, todayISO } from './logic'
 
@@ -19,6 +19,8 @@ type Action =
   | { type: 'UPDATE_HABIT'; id: string; patch: Partial<Habit> }
   | { type: 'REMOVE_HABIT'; id: string }
   | { type: 'SET_PENALIZE'; value: boolean }
+  | { type: 'SET_ACCOUNT'; patch: Partial<Account> }
+  | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'RESET' }
   | { type: 'IMPORT'; state: AppState }
 
@@ -65,6 +67,10 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, habits: state.habits.filter((h) => h.id !== action.id) }
     case 'SET_PENALIZE':
       return { ...state, penalizeIndulgence: action.value }
+    case 'SET_ACCOUNT':
+      return { ...state, account: { ...state.account, ...action.patch } }
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, onboarded: true }
     case 'RESET':
       return defaultState
     case 'IMPORT':
@@ -78,8 +84,9 @@ function load(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaultState
-    const parsed = JSON.parse(raw) as AppState
-    return { ...defaultState, ...parsed }
+    const parsed = JSON.parse(raw) as Partial<AppState>
+    // Existing installs predate onboarding — treat them as already set up.
+    return { ...defaultState, ...parsed, onboarded: parsed.onboarded ?? true }
   } catch {
     return defaultState
   }
