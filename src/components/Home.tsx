@@ -1,23 +1,13 @@
-import { useState } from 'react'
 import { useStore } from '../store'
-import {
-  addDays,
-  balance,
-  dailyPotential,
-  estimates,
-  eur,
-  isUnlocked,
-} from '../logic'
+import { balance, estimates, eur, isUnlocked } from '../logic'
 import { useTransfer } from '../useTransfer'
 
 export default function Home({ go }: { go: (tab: string) => void }) {
   const { state, dispatch, today } = useStore()
   const send = useTransfer()
-  const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
   const unlocked = isUnlocked(state)
   const est = estimates(state)
-  const potential = dailyPotential(state.habits)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
 
   // The duel: the coffee habit (or the first active one) vs. the goal.
@@ -56,15 +46,6 @@ export default function Home({ go }: { go: (tab: string) => void }) {
     duelHabit &&
     dispatch({ type: 'CLEAR_DAY_HABIT', date: today, habitId: duelHabit.id })
 
-  const etaDate =
-    est.daysAtPotential != null
-      ? addDays(today, est.daysAtPotential).toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        })
-      : null
-
   return (
     <div className="fade-in stack">
       {/* Goal title on top */}
@@ -97,33 +78,6 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       )}
 
-      {/* Collapsible estimates */}
-      {!unlocked && (
-        <div className="card details">
-          <button
-            className="details-head"
-            onClick={() => setShowDetails((s) => !s)}
-            aria-expanded={showDetails}
-          >
-            <span>Estimates</span>
-            <span className={`chevron ${showDetails ? 'open' : ''}`}>⌄</span>
-          </button>
-          {showDetails && (
-            <div className="details-body fade-in">
-              <div className="row between details-eta" style={{ border: 'none', paddingTop: 0, marginTop: 0 }}>
-                <span className="muted">At your best pace</span>
-                <strong>{est.daysAtPotential ?? '—'} days</strong>
-              </div>
-              {potential > 0 && etaDate && (
-                <div className="row between details-eta">
-                  <span className="muted">Unlock around</span>
-                  <strong style={{ color: 'var(--accent)' }}>{etaDate}</strong>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Playful daily duel: the habit vs. the goal */}
       {!unlocked && duelHabit && (
