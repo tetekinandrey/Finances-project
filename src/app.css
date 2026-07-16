@@ -445,24 +445,26 @@
   color: var(--muted);
 }
 
-/* Coffees-to-skip card */
-.coffee-goal {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+/* "N X to skip" stat tiles */
+.skip-grid {
+  display: grid;
+  gap: 12px;
 }
-.coffee-goal-num {
-  font-size: 34px;
+.skip-tile {
+  padding: 16px 14px;
+  text-align: center;
+}
+.skip-num {
+  font-size: 32px;
   font-weight: 780;
   letter-spacing: -0.03em;
   color: var(--accent);
   line-height: 1;
-  flex-shrink: 0;
 }
-.coffee-goal-label {
-  font-size: 14px;
+.skip-label {
+  font-size: 13px;
   color: var(--muted);
+  margin-top: 5px;
 }
 
 /* Goal title above the ring */

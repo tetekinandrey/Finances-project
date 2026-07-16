@@ -1,6 +1,7 @@
 import { useStore } from '../store'
 import { balance, estimates, eur, isUnlocked } from '../logic'
 import { useTransfer } from '../useTransfer'
+import type { Habit } from '../types'
 
 export default function Home({ go }: { go: (tab: string) => void }) {
   const { state, dispatch, today } = useStore()
@@ -9,9 +10,18 @@ export default function Home({ go }: { go: (tab: string) => void }) {
   const unlocked = isUnlocked(state)
   const est = estimates(state)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
+  const eatout = state.habits.find((h) => h.id === 'eatout' && h.active)
+
+  // "N X to skip" stats shown on the home screen.
+  const skipStats: { habit: Habit; noun: string }[] = []
+  if (coffee) skipStats.push({ habit: coffee, noun: 'coffees' })
+  if (eatout) skipStats.push({ habit: eatout, noun: 'lunches out' })
 
   // The duel: the coffee habit (or the first active one) vs. the goal.
   const duelHabit = coffee ?? state.habits.find((h) => h.active)
+  const otherActive = state.habits.filter(
+    (h) => h.active && h.id !== duelHabit?.id,
+  )
   const todayEntry = state.entries.find((e) => e.date === today)
   const duelAnswer = duelHabit
     ? todayEntry?.actions.find((a) => a.habitId === duelHabit.id)
@@ -42,10 +52,6 @@ export default function Home({ go }: { go: (tab: string) => void }) {
     })
   }
 
-  const undoDuel = () =>
-    duelHabit &&
-    dispatch({ type: 'CLEAR_DAY_HABIT', date: today, habitId: duelHabit.id })
-
   return (
     <div className="fade-in stack">
       {/* Goal title on top */}
@@ -68,13 +74,20 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         )}
       </div>
 
-      {/* Coffees to skip until the goal */}
-      {!unlocked && coffee && (
-        <div className="card coffee-goal">
-          <span className="coffee-goal-num">{est.skipsToGoal(coffee)}</span>
-          <span className="coffee-goal-label">
-            {coffee.emoji} coffees to skip to reach {state.goal.name}
-          </span>
+      {/* "N X to skip" stats */}
+      {!unlocked && skipStats.length > 0 && (
+        <div
+          className="skip-grid"
+          style={{ gridTemplateColumns: `repeat(${skipStats.length}, 1fr)` }}
+        >
+          {skipStats.map((s) => (
+            <div key={s.habit.id} className="card skip-tile">
+              <div className="skip-num">{est.skipsToGoal(s.habit)}</div>
+              <div className="skip-label">
+                {s.habit.emoji} {s.noun} to skip
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -84,27 +97,14 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         <div className="card duel">
           {duelAnswer ? (
             <div className="duel-result fade-in">
-              {duelAnswer.result === 'saved' ? (
-                <>
-                  <div className="duel-result-emoji">{state.goal.emoji}</div>
-                  <div className="duel-result-text">
-                    You picked <strong>{state.goal.name}</strong> — banked{' '}
-                    <strong style={{ color: 'var(--accent)' }}>
-                      {eur(duelHabit.value)}
-                    </strong>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="duel-result-emoji">{duelHabit.emoji}</div>
-                  <div className="duel-result-text">
-                    Enjoy your {duelHabit.name.toLowerCase()} — no guilt 💚
-                  </div>
-                </>
-              )}
-              <button className="btn ghost" onClick={undoDuel}>
-                Undo
-              </button>
+              <div className="duel-result-emoji">
+                {duelAnswer.result === 'saved'
+                  ? state.goal.emoji
+                  : duelHabit.emoji}
+              </div>
+              <div className="duel-result-text">
+                That&rsquo;s it for today ✌️
+              </div>
             </div>
           ) : (
             <>
@@ -130,9 +130,11 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       )}
 
-      <button className="btn ghost block" onClick={() => go('checkin')}>
-        Log the rest of today →
-      </button>
+      {otherActive.length > 0 && (
+        <button className="btn ghost block" onClick={() => go('checkin')}>
+          Coffee wasn&rsquo;t your only villain today →
+        </button>
+      )}
     </div>
   )
 }
