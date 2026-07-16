@@ -1,17 +1,15 @@
 import { useState } from 'react'
 import { StoreProvider } from './store'
 import Home from './components/Home'
-import CheckIn from './components/CheckIn'
 import Habits from './components/Habits'
 import GoalSettings from './components/GoalSettings'
 import History from './components/History'
 import './app.css'
 
-type Tab = 'home' | 'checkin' | 'history' | 'habits' | 'goal'
+type Tab = 'home' | 'history' | 'habits' | 'goal'
 
 const NAV: { id: Tab; label: string; ico: string }[] = [
-  { id: 'home', label: 'Home', ico: '🏠' },
-  { id: 'checkin', label: 'Check-in', ico: '✅' },
+  { id: 'home', label: 'Today', ico: '🏠' },
   { id: 'history', label: 'History', ico: '📈' },
   { id: 'habits', label: 'Habits', ico: '⚙️' },
   { id: 'goal', label: 'Goal', ico: '🎯' },
@@ -31,8 +29,7 @@ export default function App() {
           <span className="pill">Polkadot · testnet soon</span>
         </div>
 
-        {tab === 'home' && <Home go={(t) => setTab(t as Tab)} />}
-        {tab === 'checkin' && <CheckIn />}
+        {tab === 'home' && <Home />}
         {tab === 'history' && <History />}
         {tab === 'habits' && <Habits />}
         {tab === 'goal' && <GoalSettings />}

@@ -11,8 +11,9 @@ import {
   remaining,
 } from '../logic'
 import ProgressRing from './ProgressRing'
+import { CheckInSection } from './CheckIn'
 
-export default function Home({ go }: { go: (tab: string) => void }) {
+export default function Home() {
   const { state, today } = useStore()
   const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
@@ -22,9 +23,6 @@ export default function Home({ go }: { go: (tab: string) => void }) {
   const est = estimates(state)
   const potential = dailyPotential(state.habits)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
-
-  const answeredToday =
-    state.entries.find((e) => e.date === today)?.actions.length ?? 0
 
   const etaDate =
     est.daysAtPotential != null
@@ -109,12 +107,9 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       )}
 
-      {/* Check-in CTA */}
-      <button className="btn primary block lg" onClick={() => go('checkin')}>
-        {answeredToday > 0
-          ? `Continue today's check-in (${answeredToday} logged)`
-          : "Start today's check-in"}
-      </button>
+      {/* Today's check-in, embedded */}
+      <div className="section-title">Today&rsquo;s check-in</div>
+      <CheckInSection />
     </div>
   )
 }

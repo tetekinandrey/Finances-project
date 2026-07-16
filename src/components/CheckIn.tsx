@@ -4,6 +4,19 @@ import { eur, formatDate } from '../logic'
 import type { DayAction, Habit } from '../types'
 
 export default function CheckIn() {
+  const { today } = useStore()
+  return (
+    <div className="fade-in stack">
+      <div className="checkin-head">
+        <h2>Today&rsquo;s check-in</h2>
+        <div className="muted">{formatDate(today)} · daily habits</div>
+      </div>
+      <CheckInSection />
+    </div>
+  )
+}
+
+export function CheckInSection() {
   const { state, dispatch, today } = useStore()
   const active = state.habits.filter((h) => h.active)
   const entry = state.entries.find((e) => e.date === today)
@@ -16,12 +29,7 @@ export default function CheckIn() {
   const allDone = doneCount === active.length && active.length > 0
 
   return (
-    <div className="fade-in stack">
-      <div className="checkin-head">
-        <h2>Today&rsquo;s check-in</h2>
-        <div className="muted">{formatDate(today)} · daily habits</div>
-      </div>
-
+    <>
       <div className="card checkin-summary">
         <div className="row between">
           <span className="muted">Banked today</span>
@@ -82,7 +90,7 @@ export default function CheckIn() {
           ✅ All done for today. Come back tomorrow!
         </div>
       )}
-    </div>
+    </>
   )
 }
 
