@@ -23,14 +23,14 @@ const PRESETS: Preset[] = [
     ico: '🏠',
     hint: 'Set up, nothing saved yet',
     build: freshHomeState,
-    tab: 'home',
+    tab: 'pocket',
   },
   {
     label: 'Saved',
     ico: '💰',
     hint: 'Two weeks of progress',
     build: savedState,
-    tab: 'home',
+    tab: 'pocket',
   },
 ]
 

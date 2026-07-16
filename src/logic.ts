@@ -25,7 +25,7 @@ export const remaining = (state: AppState): number =>
 
 export const progress = (state: AppState): number => {
   if (state.goal.targetPrice <= 0) return 0
-  return Math.min(1, balance(state) / state.goal.targetPrice)
+  return Math.max(0, Math.min(1, balance(state) / state.goal.targetPrice))
 }
 
 export const isUnlocked = (state: AppState): boolean =>

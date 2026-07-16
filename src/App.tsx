@@ -1,25 +1,19 @@
 import { useState } from 'react'
 import { StoreProvider, useStore } from './store'
-import Home from './components/Home'
-import CheckIn from './components/CheckIn'
-import Habits from './components/Habits'
-import GoalSettings from './components/GoalSettings'
-import History from './components/History'
+import Chats from './components/Chats'
+import Pocket from './components/Pocket'
+import Settings from './components/Settings'
 import Onboarding from './components/Onboarding'
-import Chain from './components/Chain'
 import StateSimulator from './components/StateSimulator'
 import { shortAddress } from './seed'
 import './app.css'
 
-type Tab = 'home' | 'checkin' | 'history' | 'chain' | 'habits' | 'goal'
+type Tab = 'chats' | 'pocket' | 'settings'
 
 const NAV: { id: Tab; label: string; ico: string }[] = [
-  { id: 'home', label: 'Home', ico: '🏠' },
-  { id: 'checkin', label: 'Check-in', ico: '✅' },
-  { id: 'history', label: 'History', ico: '📈' },
-  { id: 'chain', label: 'Chain', ico: '🔗' },
-  { id: 'habits', label: 'Habits', ico: '⚙️' },
-  { id: 'goal', label: 'Goal', ico: '🎯' },
+  { id: 'chats', label: 'Chats', ico: '💬' },
+  { id: 'pocket', label: 'Pocket', ico: '🪪' },
+  { id: 'settings', label: 'Settings', ico: '⚙️' },
 ]
 
 export default function App() {
@@ -32,7 +26,7 @@ export default function App() {
 
 function Shell() {
   const { state } = useStore()
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTab] = useState<Tab>('pocket')
 
   if (!state.onboarded)
     return (
@@ -53,16 +47,13 @@ function Shell() {
           <span className={`pill ${state.account.connected ? 'connected' : ''}`}>
             {state.account.connected
               ? `🔗 ${shortAddress(state.account.address)}`
-              : 'Polkadot · testnet soon'}
+              : 'Polkadot · testnet'}
           </span>
         </div>
 
-        {tab === 'home' && <Home go={(t) => setTab(t as Tab)} />}
-        {tab === 'checkin' && <CheckIn />}
-        {tab === 'history' && <History />}
-        {tab === 'chain' && <Chain />}
-        {tab === 'habits' && <Habits />}
-        {tab === 'goal' && <GoalSettings />}
+        {tab === 'chats' && <Chats />}
+        {tab === 'pocket' && <Pocket go={(t) => setTab(t as Tab)} />}
+        {tab === 'settings' && <Settings />}
       </div>
 
       <nav className="nav">

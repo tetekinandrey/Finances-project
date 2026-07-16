@@ -45,8 +45,21 @@ src/
   sample.ts       demo history generator
   chain.ts        Polkadot/Paseo service (connect, balances, vault, transfer)
   useTransfer.ts  hook: turn a saved euro into an on-chain transfer
-  components/     Home · CheckIn · Habits · GoalSettings · History · Onboarding · Chain
+  components/     Pocket · GoalDetail · Chats · Settings · Habits ·
+                  GoalSettings · History · Onboarding · Chain · StateSimulator
 ```
+
+## App structure
+
+Three tabs (after onboarding):
+
+- **Pocket** — a wallet of cards: Identity, Main account (€ balance), and the
+  Leica savings card. Tapping the savings card opens the goal detail (balance,
+  progress, coffees/lunches to skip).
+- **Chats** — the daily check-in as a conversation. Each day the "savings buddy"
+  asks *Coffee or Leica M6?* plus the other "villains" (eating out, U-Bahn,
+  groceries); your answers are recorded as messages and drive the vault.
+- **Settings** — Goal, Items & habits, and the Polkadot account.
 
 ## Run
 

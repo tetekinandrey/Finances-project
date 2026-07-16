@@ -157,6 +157,284 @@
   border-radius: var(--radius-sm);
   padding: 14px;
 }
+/* Back row --------------------------------------------------- */
+.back-row {
+  align-self: flex-start;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 2px;
+}
+
+/* Pocket / wallet cards ------------------------------------- */
+.wallet-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  color: #fff;
+}
+.wallet-card.id {
+  background: linear-gradient(135deg, #3b2f6b, #241d40);
+}
+.wallet-card.main {
+  background: linear-gradient(135deg, #1e3a5f, #142033);
+}
+.wallet-card.savings {
+  background: linear-gradient(135deg, #1c5a45, #0f2c22);
+}
+.wallet-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+.wallet-kind {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+.wallet-chip {
+  font-size: 22px;
+}
+.wallet-id-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.wallet-balance {
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+.wallet-sub {
+  font-size: 13px;
+  opacity: 0.75;
+  margin-top: 3px;
+}
+.wallet-progress {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+.wallet-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Chats ------------------------------------------------------ */
+.chat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.chat-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.chat-avatar.sm {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+}
+.chat-list-title {
+  display: block;
+  font-weight: 650;
+}
+.chat-list-preview {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-list-badge {
+  color: var(--accent);
+  font-size: 12px;
+}
+.chat {
+  display: flex;
+  flex-direction: column;
+}
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 2px 12px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 2;
+}
+.chat-back {
+  font-size: 22px;
+  color: var(--muted);
+  padding: 0 6px;
+}
+.chat-head-title {
+  font-weight: 700;
+}
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 0 10px;
+}
+.chat-day {
+  text-align: center;
+  font-size: 12px;
+  color: var(--faint);
+  margin: 8px 0 2px;
+}
+.bubble {
+  max-width: 82%;
+  padding: 11px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.bubble.app {
+  align-self: flex-start;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+.bubble.me {
+  align-self: flex-end;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: var(--accent-ink);
+  border-bottom-right-radius: 6px;
+  font-weight: 600;
+}
+.chat-choices {
+  display: flex;
+  gap: 10px;
+  align-self: stretch;
+  margin: 2px 0 4px;
+}
+.chat-choice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+  font-weight: 650;
+  font-size: 14px;
+  transition: transform 0.08s, border-color 0.15s;
+}
+.chat-choice:active {
+  transform: scale(0.96);
+}
+.chat-choice.save:hover {
+  border-color: var(--accent-2);
+}
+.chat-choice.treat:hover {
+  border-color: var(--gold);
+}
+.chat-choice-sub {
+  font-size: 12px;
+  color: var(--accent);
+}
+.chat-villain {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+.chat-villain-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.chat-villain-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.chat-mini {
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--bg-elev-2);
+}
+.chat-mini.save {
+  color: var(--accent);
+  border-color: #34d39944;
+}
+.chat-mini.treat {
+  color: var(--gold);
+  border-color: #f4c76b44;
+}
+
+/* Settings menu -------------------------------------------- */
+.settings-menu {
+  padding: 6px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 10px;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+.settings-row:hover {
+  background: var(--bg-elev);
+}
+.settings-row + .settings-row {
+  border-top: 1px solid var(--line);
+}
+.settings-ico {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+.settings-label {
+  display: block;
+  font-weight: 600;
+}
+.settings-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.settings-chevron {
+  color: var(--faint);
+  font-size: 20px;
+}
+
 /* State simulator (demo tool) ------------------------------ */
 .sim {
   position: fixed;
