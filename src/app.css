@@ -157,6 +157,16 @@
   border-radius: var(--radius-sm);
   padding: 14px;
 }
+.onb-balance {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.onb-balance-status {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+}
 .onb-review-card {
   background: var(--card);
   border: 1px solid var(--line);

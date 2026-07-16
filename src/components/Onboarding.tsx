@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { eur } from '../logic'
-import { DEMO_ADDRESS, shortAddress, uid } from '../seed'
+import { DEMO_ADDRESS, mockBalanceFor, shortAddress, uid } from '../seed'
 import type { Goal, Habit } from '../types'
 
 const STEPS = ['Goal', 'Items', 'Account', 'Review']
@@ -18,7 +18,7 @@ export default function Onboarding() {
       : step === 1
         ? activeItems > 0
         : step === 2
-          ? account.connected && account.address.trim().length > 0
+          ? account.connected && account.balanceChecked && account.balance > 0
           : true
 
   const next = () => {
@@ -163,12 +163,6 @@ function ItemsStep() {
         {state.habits.map((h) => (
           <div key={h.id} className={`onb-item ${h.active ? 'on' : ''}`}>
             <input
-              className="onb-item-emoji"
-              value={h.emoji}
-              maxLength={2}
-              onChange={(e) => patch(h.id, { emoji: e.target.value })}
-            />
-            <input
               className="onb-item-name"
               value={h.name}
               placeholder="Item name"
@@ -223,11 +217,18 @@ function Toggle({
 function AccountStep() {
   const { state, dispatch } = useStore()
   const { account, goal } = state
+  const [checking, setChecking] = useState(false)
 
   const connectDemo = () =>
     dispatch({
       type: 'SET_ACCOUNT',
-      patch: { address: DEMO_ADDRESS, label: 'Demo account', connected: true },
+      patch: {
+        address: DEMO_ADDRESS,
+        label: 'Demo account',
+        connected: true,
+        balanceChecked: false,
+        balance: 0,
+      },
     })
 
   const onAddress = (address: string) =>
@@ -237,16 +238,34 @@ function AccountStep() {
         address,
         label: account.label || 'Polkadot account',
         connected: address.trim().length > 0,
+        balanceChecked: false,
+        balance: 0,
       },
     })
 
+  const checkBalance = () => {
+    setChecking(true)
+    // Simulated on-chain balance query (real transfer wiring lands in phase 2).
+    setTimeout(() => {
+      dispatch({
+        type: 'SET_ACCOUNT',
+        patch: {
+          balance: mockBalanceFor(account.address),
+          balanceChecked: true,
+        },
+      })
+      setChecking(false)
+    }, 900)
+  }
+
+  const enough = account.balance >= goal.targetPrice
+
   return (
     <>
-      <h1 className="onb-title">Connect your account</h1>
+      <h1 className="onb-title">Add your funding account</h1>
       <p className="muted onb-sub">
-        This is the account your funds come from. Every euro you save moves into
-        a locked <strong>{goal.name || 'goal'} vault</strong> inside it — you
-        can&rsquo;t spend it until you hit {eur(goal.targetPrice || 0)}.
+        The account where you hold the money. Each euro you save is transferred
+        from here into a locked <strong>{goal.name || 'goal'} vault</strong>.
       </p>
 
       <div className="field">
@@ -276,12 +295,39 @@ function AccountStep() {
             </div>
             <span className="pill connected">Connected</span>
           </div>
+
+          <div className="onb-balance">
+            {account.balanceChecked ? (
+              <>
+                <div className="row between">
+                  <span className="muted">Available balance</span>
+                  <strong>{eur(account.balance)}</strong>
+                </div>
+                <div
+                  className="onb-balance-status"
+                  style={{ color: enough ? 'var(--accent)' : 'var(--warn)' }}
+                >
+                  {enough
+                    ? '✅ Enough to fund your whole plan'
+                    : '⚠️ Covers part of the plan — funds can still be transferred'}
+                </div>
+              </>
+            ) : (
+              <button
+                className="btn block"
+                disabled={checking}
+                onClick={checkBalance}
+              >
+                {checking ? 'Checking balance…' : 'Check balance'}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       <p className="faint onb-note">
-        🔒 Testnet only for now — no real funds move. Real Polkadot transfers
-        come in a later update.
+        🔒 Testnet only for now — the balance check is simulated and no real
+        funds move. Real Polkadot transfers come in a later update.
       </p>
     </>
   )
@@ -318,6 +364,10 @@ function ReviewStep() {
         <div className="row between">
           <span className="muted">Account</span>
           <strong>{shortAddress(account.address)}</strong>
+        </div>
+        <div className="row between">
+          <span className="muted">Balance</span>
+          <strong>{eur(account.balance)}</strong>
         </div>
         <div className="row between">
           <span className="muted">Item vault</span>

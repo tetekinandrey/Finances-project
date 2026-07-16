@@ -34,6 +34,10 @@ export interface Account {
   address: string
   label: string
   connected: boolean
+  /** Available funds in the account (mocked until phase 2). */
+  balance: number
+  /** Whether the balance has been fetched/verified. */
+  balanceChecked: boolean
 }
 
 /** One answered habit on a given day. */

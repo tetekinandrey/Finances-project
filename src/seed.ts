@@ -52,7 +52,13 @@ export const defaultState: AppState = {
   habits: defaultHabits,
   entries: [],
   penalizeIndulgence: true,
-  account: { address: '', label: '', connected: false },
+  account: {
+    address: '',
+    label: '',
+    connected: false,
+    balance: 0,
+    balanceChecked: false,
+  },
   onboarded: false,
 }
 
@@ -61,3 +67,15 @@ export const DEMO_ADDRESS = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
 
 export const shortAddress = (a: string): string =>
   a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a
+
+/**
+ * Deterministic mocked balance for an address (~€800–€6,300, with cents).
+ * Stands in for a real on-chain balance query until phase 2.
+ */
+export function mockBalanceFor(address: string): number {
+  let h = 0
+  for (let i = 0; i < address.length; i++) h = (h * 31 + address.charCodeAt(i)) >>> 0
+  const euros = 800 + (h % 5500)
+  const cents = h % 100
+  return euros + cents / 100
+}

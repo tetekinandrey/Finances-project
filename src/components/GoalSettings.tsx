@@ -1,6 +1,6 @@
 import { useStore } from '../store'
 import { balance, eur } from '../logic'
-import { DEMO_ADDRESS, shortAddress } from '../seed'
+import { DEMO_ADDRESS, mockBalanceFor, shortAddress } from '../seed'
 
 export default function GoalSettings() {
   const { state, dispatch } = useStore()
@@ -80,28 +80,43 @@ export default function GoalSettings() {
       <div className="section-title">Account</div>
       <div className="card stack">
         {account.connected ? (
-          <div className="row between">
-            <div className="row" style={{ gap: 10 }}>
-              <span style={{ fontSize: 20 }}>🔗</span>
-              <div>
-                <div style={{ fontWeight: 650 }}>{account.label}</div>
-                <div className="faint" style={{ fontSize: 12 }}>
-                  {shortAddress(account.address)}
+          <>
+            <div className="row between">
+              <div className="row" style={{ gap: 10 }}>
+                <span style={{ fontSize: 20 }}>🔗</span>
+                <div>
+                  <div style={{ fontWeight: 650 }}>{account.label}</div>
+                  <div className="faint" style={{ fontSize: 12 }}>
+                    {shortAddress(account.address)}
+                  </div>
                 </div>
               </div>
+              <button
+                className="btn ghost"
+                onClick={() =>
+                  dispatch({
+                    type: 'SET_ACCOUNT',
+                    patch: {
+                      address: '',
+                      label: '',
+                      connected: false,
+                      balance: 0,
+                      balanceChecked: false,
+                    },
+                  })
+                }
+              >
+                Disconnect
+              </button>
             </div>
-            <button
-              className="btn ghost"
-              onClick={() =>
-                dispatch({
-                  type: 'SET_ACCOUNT',
-                  patch: { address: '', label: '', connected: false },
-                })
-              }
+            <div
+              className="row between"
+              style={{ borderTop: '1px solid var(--line)', paddingTop: 12 }}
             >
-              Disconnect
-            </button>
-          </div>
+              <span className="muted">Available balance</span>
+              <strong>{eur(account.balance)}</strong>
+            </div>
+          </>
         ) : (
           <>
             <div className="field">
@@ -109,16 +124,20 @@ export default function GoalSettings() {
               <input
                 value={account.address}
                 placeholder="5Grwva…  (Polkadot address)"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const address = e.target.value
+                  const has = address.trim().length > 0
                   dispatch({
                     type: 'SET_ACCOUNT',
                     patch: {
-                      address: e.target.value,
+                      address,
                       label: account.label || 'Polkadot account',
-                      connected: e.target.value.trim().length > 0,
+                      connected: has,
+                      balance: has ? mockBalanceFor(address) : 0,
+                      balanceChecked: has,
                     },
                   })
-                }
+                }}
               />
             </div>
             <button
@@ -130,6 +149,8 @@ export default function GoalSettings() {
                     address: DEMO_ADDRESS,
                     label: 'Demo account',
                     connected: true,
+                    balance: mockBalanceFor(DEMO_ADDRESS),
+                    balanceChecked: true,
                   },
                 })
               }
