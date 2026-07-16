@@ -10,9 +10,9 @@ The twist: treating yourself is fine. If you *did* buy the coffee, the app
 doesn't scold you — it asks "was it worth it?" so the indulgence stays
 intentional and guilt-free. It just costs the plan.
 
-> **Status:** frontend + full logic with fictional values (this repo today).
-> A Polkadot testnet layer for the actual locked-savings mechanic comes next —
-> see the roadmap below.
+> **Status:** frontend + full logic with fictional euro values, **plus a live
+> Polkadot (Paseo testnet) layer** that moves real test coins from your wallet
+> into an app-generated vault account on every save. See "Polkadot layer" below.
 
 ## What it does
 
@@ -38,12 +38,14 @@ Generate 14 sample days* to see it populated.
 
 ```
 src/
-  types.ts        domain model (Habit, Goal, DayEntry…)
-  seed.ts         default goal + habits
+  types.ts        domain model (Habit, Goal, DayEntry, Account, Vault, TxRecord…)
+  seed.ts         default goal + habits + mocked balance helper
   logic.ts        balance, progress, estimates (pure functions)
   store.tsx       reducer + localStorage persistence
   sample.ts       demo history generator
-  components/     Home · CheckIn · Habits · GoalSettings · History · ProgressRing
+  chain.ts        Polkadot/Paseo service (connect, balances, vault, transfer)
+  useTransfer.ts  hook: turn a saved euro into an on-chain transfer
+  components/     Home · CheckIn · Habits · GoalSettings · History · Onboarding · Chain
 ```
 
 ## Run
@@ -54,22 +56,47 @@ npm run dev      # http://localhost:5173
 npm run build    # production build
 ```
 
-## Roadmap — Polkadot layer
+## Polkadot layer (Paseo testnet)
 
-The current vault is a number in `localStorage`. The plan is to make it real on
-a Polkadot testnet (Westend / Paseo, or a local `substrate-contracts-node`):
+The **Chain** tab wires the app to the [Paseo](https://paseo.subscan.io/)
+testnet via `@polkadot/api`. Every euro you bank triggers a **real on-chain
+transfer** from your wallet account into an app-generated vault account.
 
-1. **Main account → savings account.** Each "saved" day triggers a transfer of
-   the fictional-then-real amount from your main account into a savings account.
-   Treating yourself transfers back out.
-2. **Locked savings.** Funds in the savings account are time/goal-locked (via a
-   vesting/escrow pallet or an ink! smart contract) so they can't be spent until
-   the goal balance is reached.
-3. **Unlock on goal.** When the balance hits the target, the contract releases
-   the funds.
-4. **Integration.** `@polkadot/api` + a wallet extension (Talisman /
-   polkadot-js) wired behind the same `store` interface used today, so the UI
-   barely changes.
+How it works:
 
-The domain types in `src/types.ts` are intentionally chain-friendly (signed
-amounts, per-day ledgers) to make this migration mechanical.
+1. **Connect a wallet.** Connect Polkadot.js / Talisman / SubWallet
+   (`@polkadot/extension-dapp`) and pick the account funds come from.
+2. **Fund it.** Grab free PAS from the faucet (linked in-app:
+   `faucet.polkadot.io`, Paseo network).
+3. **Vault account.** The app generates a dedicated sr25519 keypair — the
+   locked savings vault. It receives every transfer; its Subscan page is linked
+   in-app.
+4. **Transfer on save.** Each check-in "I saved" (or the *Send test transfer*
+   button) signs a `balances.transferKeepAlive` in your extension and submits
+   it. The euro amount maps to PAS via `tokensPerEuro` (default 0.1); the first
+   transfer into an empty vault is topped up to the existential deposit.
+5. **Track.** The transfer log shows each tx's status (pending → in-block →
+   finalized) with a Subscan link.
+
+> ⚠️ **Testnet prototype.** The vault key is generated and stored in
+> `localStorage` in plaintext — fine for Paseo test coins, never for real funds.
+
+### Verifying transfers
+
+The bundled preview browser and CI sandboxes block outbound WebSockets, so the
+live chain must be exercised in a normal browser:
+
+```bash
+npm run dev            # then open http://localhost:5173 in Chrome
+```
+
+Install the Polkadot.js extension, create/import a Paseo account, fund it from
+the faucet, then open the **Chain** tab → *Connect wallet* → *Send test
+transfer*. Confirm the extrinsic on [paseo.subscan.io](https://paseo.subscan.io/).
+
+### Next steps
+
+- **On-chain locking.** Today the "lock" is enforced in the UI. A vesting
+  pallet or ink! escrow contract would make it cryptographic.
+- **Unlock flow.** The app holds the vault key, so it can already sign the
+  vault → main transfer when the goal is reached — a UI for it is the next add.

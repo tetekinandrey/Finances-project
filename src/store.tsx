@@ -5,7 +5,16 @@ import {
   useReducer,
   type ReactNode,
 } from 'react'
-import type { Account, AppState, DayAction, Goal, Habit } from './types'
+import type {
+  Account,
+  AppState,
+  DayAction,
+  Goal,
+  Habit,
+  TxRecord,
+  TxStatus,
+  Vault,
+} from './types'
 import { defaultState } from './seed'
 import { findEntry, todayISO } from './logic'
 
@@ -21,6 +30,9 @@ type Action =
   | { type: 'SET_PENALIZE'; value: boolean }
   | { type: 'SET_ACCOUNT'; patch: Partial<Account> }
   | { type: 'COMPLETE_ONBOARDING' }
+  | { type: 'SET_VAULT'; vault: Vault }
+  | { type: 'ADD_TRANSFER'; tx: TxRecord }
+  | { type: 'UPDATE_TRANSFER'; hash: string; status: TxStatus }
   | { type: 'RESET' }
   | { type: 'IMPORT'; state: AppState }
 
@@ -75,6 +87,17 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         onboarded: true,
         habits: state.habits.filter((h) => h.name.trim().length > 0),
+      }
+    case 'SET_VAULT':
+      return { ...state, vault: action.vault }
+    case 'ADD_TRANSFER':
+      return { ...state, transfers: [action.tx, ...state.transfers] }
+    case 'UPDATE_TRANSFER':
+      return {
+        ...state,
+        transfers: state.transfers.map((t) =>
+          t.hash === action.hash ? { ...t, status: action.status } : t,
+        ),
       }
     case 'RESET':
       return defaultState

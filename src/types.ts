@@ -58,6 +58,28 @@ export interface DayEntry {
   actions: DayAction[]
 }
 
+export type TxStatus = 'pending' | 'inBlock' | 'finalized' | 'failed'
+
+/** A record of one on-chain transfer (main account → vault). */
+export interface TxRecord {
+  hash: string
+  from: string
+  to: string
+  /** Amount in plancks, stored as a string (bigint isn't JSON-safe). */
+  planck: string
+  euro: number
+  status: TxStatus
+  ts: number
+  habitId?: string
+}
+
+/** App-generated, testnet-only vault keypair. */
+export interface Vault {
+  address: string
+  /** Plaintext mnemonic — acceptable for a testnet prototype only. */
+  mnemonic: string
+}
+
 export interface AppState {
   goal: Goal
   habits: Habit[]
@@ -68,4 +90,10 @@ export interface AppState {
   account: Account
   /** Whether the first-run setup wizard has been completed. */
   onboarded: boolean
+  /** On-chain vault that receives saved funds on the Paseo testnet. */
+  vault: Vault
+  /** How many test tokens one euro of savings maps to on-chain. */
+  tokensPerEuro: number
+  /** Log of on-chain transfers. */
+  transfers: TxRecord[]
 }

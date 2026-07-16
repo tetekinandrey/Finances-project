@@ -60,6 +60,9 @@ export const defaultState: AppState = {
     balanceChecked: false,
   },
   onboarded: false,
+  vault: { address: '', mnemonic: '' },
+  tokensPerEuro: 0.1,
+  transfers: [],
 }
 
 /** A well-known Polkadot test address, used for the "demo account" button. */

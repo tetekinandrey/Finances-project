@@ -157,6 +157,47 @@
   border-radius: var(--radius-sm);
   padding: 14px;
 }
+/* Chain / wallet ------------------------------------------- */
+.wallet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.wallet-item {
+  text-align: left;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: border-color 0.15s;
+}
+.wallet-item:hover {
+  border-color: var(--accent-2);
+}
+.tx-row {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px 14px;
+}
+.tx-status {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.tx-status.finalized {
+  color: var(--accent);
+}
+.tx-status.inBlock,
+.tx-status.pending {
+  color: var(--warn);
+}
+.tx-status.failed {
+  color: var(--danger);
+}
+
 .onb-balance {
   margin-top: 14px;
   padding-top: 14px;

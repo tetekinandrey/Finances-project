@@ -6,15 +6,17 @@ import Habits from './components/Habits'
 import GoalSettings from './components/GoalSettings'
 import History from './components/History'
 import Onboarding from './components/Onboarding'
+import Chain from './components/Chain'
 import { shortAddress } from './seed'
 import './app.css'
 
-type Tab = 'home' | 'checkin' | 'history' | 'habits' | 'goal'
+type Tab = 'home' | 'checkin' | 'history' | 'chain' | 'habits' | 'goal'
 
 const NAV: { id: Tab; label: string; ico: string }[] = [
   { id: 'home', label: 'Home', ico: '🏠' },
   { id: 'checkin', label: 'Check-in', ico: '✅' },
   { id: 'history', label: 'History', ico: '📈' },
+  { id: 'chain', label: 'Chain', ico: '🔗' },
   { id: 'habits', label: 'Habits', ico: '⚙️' },
   { id: 'goal', label: 'Goal', ico: '🎯' },
 ]
@@ -51,6 +53,7 @@ function Shell() {
         {tab === 'home' && <Home go={(t) => setTab(t as Tab)} />}
         {tab === 'checkin' && <CheckIn />}
         {tab === 'history' && <History />}
+        {tab === 'chain' && <Chain />}
         {tab === 'habits' && <Habits />}
         {tab === 'goal' && <GoalSettings />}
       </div>

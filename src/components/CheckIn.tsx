@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { eur, formatDate } from '../logic'
+import { useTransfer } from '../useTransfer'
 import type { DayAction, Habit } from '../types'
 
 export default function CheckIn() {
@@ -18,6 +19,7 @@ export default function CheckIn() {
 
 export function CheckInSection() {
   const { state, dispatch, today } = useStore()
+  const send = useTransfer()
   const active = state.habits.filter((h) => h.active)
   const entry = state.entries.find((e) => e.date === today)
   const answers = new Map(
@@ -59,13 +61,17 @@ export function CheckInSection() {
           key={h.id}
           habit={h}
           answer={answers.get(h.id)}
-          onSave={() =>
+          onSave={() => {
             dispatch({
               type: 'RECORD',
               date: today,
               action: { habitId: h.id, result: 'saved', amount: h.value },
             })
-          }
+            // Fire a real on-chain transfer if a wallet is connected.
+            send(h.value, h.id)?.catch((e) =>
+              console.warn('Vault transfer failed:', e),
+            )
+          }}
           onIndulge={(worthIt, note) =>
             dispatch({
               type: 'RECORD',
