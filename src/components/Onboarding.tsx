@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { eur } from '../logic'
-import { DEMO_ADDRESS, shortAddress } from '../seed'
-import type { Goal } from '../types'
+import { DEMO_ADDRESS, shortAddress, uid } from '../seed'
+import type { Goal, Habit } from '../types'
 
-const STEPS = ['Goal', 'Account', 'Review']
+const STEPS = ['Goal', 'Items', 'Account', 'Review']
 
 export default function Onboarding() {
   const { state, dispatch } = useStore()
   const [step, setStep] = useState(0)
   const { goal, account } = state
+  const activeItems = state.habits.filter((h) => h.active).length
 
   const canNext =
     step === 0
       ? goal.name.trim().length > 0 && goal.targetPrice > 0
       : step === 1
-        ? account.connected && account.address.trim().length > 0
-        : true
+        ? activeItems > 0
+        : step === 2
+          ? account.connected && account.address.trim().length > 0
+          : true
 
   const next = () => {
     if (step < STEPS.length - 1) setStep((s) => s + 1)
@@ -43,8 +46,9 @@ export default function Onboarding() {
 
         <div className="onb-body fade-in" key={step}>
           {step === 0 && <GoalStep />}
-          {step === 1 && <AccountStep />}
-          {step === 2 && <ReviewStep />}
+          {step === 1 && <ItemsStep />}
+          {step === 2 && <AccountStep />}
+          {step === 3 && <ReviewStep />}
         </div>
       </div>
 
@@ -127,6 +131,95 @@ function GoalStep() {
   )
 }
 
+function ItemsStep() {
+  const { state, dispatch } = useStore()
+
+  const addItem = () =>
+    dispatch({
+      type: 'ADD_HABIT',
+      habit: {
+        id: uid(),
+        name: '',
+        emoji: '💸',
+        value: 5,
+        savePrompt: 'Did you resist this expense today?',
+        indulgePrompt: 'Spent on it — was it worth it?',
+        active: true,
+      },
+    })
+
+  const patch = (id: string, p: Partial<Habit>) =>
+    dispatch({ type: 'UPDATE_HABIT', id, patch: p })
+
+  return (
+    <>
+      <h1 className="onb-title">What will you save on?</h1>
+      <p className="muted onb-sub">
+        Each day you skip one of these, its value goes to your vault. Keep the
+        ones that fit, tweak the amounts, or add your own.
+      </p>
+
+      <div className="stack">
+        {state.habits.map((h) => (
+          <div key={h.id} className={`onb-item ${h.active ? 'on' : ''}`}>
+            <input
+              className="onb-item-emoji"
+              value={h.emoji}
+              maxLength={2}
+              onChange={(e) => patch(h.id, { emoji: e.target.value })}
+            />
+            <input
+              className="onb-item-name"
+              value={h.name}
+              placeholder="Item name"
+              onChange={(e) => patch(h.id, { name: e.target.value })}
+            />
+            <div className="onb-item-val">
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                value={h.value || ''}
+                onChange={(e) =>
+                  patch(h.id, { value: Number(e.target.value) || 0 })
+                }
+              />
+              <span className="onb-item-cur">€</span>
+            </div>
+            <Toggle
+              on={h.active}
+              onChange={(v) => patch(h.id, { active: v })}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button className="btn block" style={{ marginTop: 12 }} onClick={addItem}>
+        + Add your own
+      </button>
+    </>
+  )
+}
+
+function Toggle({
+  on,
+  onChange,
+}: {
+  on: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <button
+      className={`toggle ${on ? 'on' : ''}`}
+      onClick={() => onChange(!on)}
+      role="switch"
+      aria-checked={on}
+    >
+      <span className="knob" />
+    </button>
+  )
+}
+
 function AccountStep() {
   const { state, dispatch } = useStore()
   const { account, goal } = state
@@ -197,6 +290,7 @@ function AccountStep() {
 function ReviewStep() {
   const { state } = useStore()
   const { goal, account } = state
+  const items = state.habits.filter((h) => h.active)
   return (
     <>
       <h1 className="onb-title">You&rsquo;re all set</h1>
@@ -214,6 +308,12 @@ function ReviewStep() {
         <div className="row between">
           <span className="muted">Target</span>
           <strong>{eur(goal.targetPrice)}</strong>
+        </div>
+        <div className="row between">
+          <span className="muted">Saving on</span>
+          <strong>
+            {items.length} {items.length === 1 ? 'item' : 'items'}
+          </strong>
         </div>
         <div className="row between">
           <span className="muted">Account</span>

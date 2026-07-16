@@ -171,6 +171,51 @@
   margin-top: 18px;
   line-height: 1.5;
 }
+.onb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  opacity: 0.55;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.onb-item.on {
+  opacity: 1;
+  border-color: #34d39933;
+}
+.onb-item input {
+  padding: 8px 8px;
+}
+.onb-item-emoji {
+  width: 42px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.onb-item-name {
+  flex: 1;
+  min-width: 0;
+}
+.onb-item-val {
+  position: relative;
+  width: 78px;
+  flex-shrink: 0;
+}
+.onb-item-val input {
+  padding-right: 22px;
+  text-align: right;
+}
+.onb-item-cur {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 13px;
+  pointer-events: none;
+}
 .onb-actions {
   position: sticky;
   bottom: 0;

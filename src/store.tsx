@@ -70,7 +70,12 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_ACCOUNT':
       return { ...state, account: { ...state.account, ...action.patch } }
     case 'COMPLETE_ONBOARDING':
-      return { ...state, onboarded: true }
+      // Drop half-added items with no name so they don't render as blank cards.
+      return {
+        ...state,
+        onboarded: true,
+        habits: state.habits.filter((h) => h.name.trim().length > 0),
+      }
     case 'RESET':
       return defaultState
     case 'IMPORT':
