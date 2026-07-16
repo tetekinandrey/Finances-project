@@ -84,6 +84,16 @@
   color: var(--muted);
 }
 
+/* Goal title above the ring */
+.goal-title {
+  text-align: center;
+  padding: 6px 4px 0;
+}
+.goal-title h1 {
+  font-size: 28px;
+  margin-top: 3px;
+}
+
 /* Goal info below the ring */
 .ring-goal {
   width: 100%;

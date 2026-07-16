@@ -8,7 +8,6 @@ import {
   eur,
   isUnlocked,
   progress,
-  remaining,
 } from '../logic'
 import ProgressRing from './ProgressRing'
 import { CheckInSection } from './CheckIn'
@@ -18,7 +17,6 @@ export default function Home() {
   const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
   const pct = progress(state)
-  const rem = remaining(state)
   const unlocked = isUnlocked(state)
   const est = estimates(state)
   const potential = dailyPotential(state.habits)
@@ -35,35 +33,26 @@ export default function Home() {
 
   return (
     <div className="fade-in stack">
-      {/* Goal hero — compact image banner */}
-      <div className="goal-hero compact">
-        {state.goal.imageUrl ? (
-          <img src={state.goal.imageUrl} alt={state.goal.name} />
-        ) : (
-          <div className="goal-hero-emoji">{state.goal.emoji}</div>
-        )}
+      {/* Goal title on top */}
+      <div className="goal-title">
+        <div className="ring-goal-label">🎯 Saving for</div>
+        <h1>{state.goal.name}</h1>
       </div>
 
-      {/* Progress ring with balance inside, goal info below */}
+      {/* Progress ring */}
       <div className="card ring-card">
         <ProgressRing progress={pct} size={190} stroke={13}>
           <div className="ring-amount">{eur(bal)}</div>
-          <div className="muted" style={{ fontSize: 12 }}>
-            {(pct * 100).toFixed(1)}% saved
-          </div>
           {unlocked ? (
             <div className="ring-sub" style={{ color: 'var(--accent)' }}>
               🎉 unlocked!
             </div>
           ) : (
-            <div className="ring-sub">{eur(rem)} to go</div>
+            <div className="ring-sub">
+              saved from {eur(state.goal.targetPrice)} required
+            </div>
           )}
         </ProgressRing>
-        <div className="ring-goal">
-          <div className="ring-goal-label">🎯 Saving for</div>
-          <div className="ring-goal-name">{state.goal.name}</div>
-          <div className="muted">{eur(state.goal.targetPrice)}</div>
-        </div>
       </div>
 
       {/* Collapsible estimates */}
