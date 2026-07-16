@@ -77,30 +77,51 @@
   font-weight: 750;
   letter-spacing: -0.03em;
 }
-.ring-amount.sm {
-  font-size: 20px;
+.ring-sub {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
-/* Compact progress card: ring + info side by side */
-.progress-compact {
+/* Collapsible estimates ------------------------------------- */
+.details {
+  padding: 0;
+  overflow: hidden;
+}
+.details-head {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 16px;
-}
-.progress-compact .progress-compact-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-weight: 600;
   font-size: 15px;
 }
-.progress-compact .progress-compact-info strong {
+.details-head .chevron {
+  font-size: 18px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.details-head .chevron.open {
+  transform: rotate(180deg);
+}
+.details-body {
+  padding: 0 16px 16px;
+}
+.details-eta {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+.details-eta strong {
   font-size: 16px;
 }
-.progress-compact .unlocked-banner {
-  padding: 10px;
-  font-size: 15px;
+.stat.bare {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 .rem-line {
   width: 100%;

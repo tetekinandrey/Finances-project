@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '../store'
 import {
   addDays,
@@ -13,6 +14,7 @@ import ProgressRing from './ProgressRing'
 
 export default function Home({ go }: { go: (tab: string) => void }) {
   const { state, today } = useStore()
+  const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
   const pct = progress(state)
   const rem = remaining(state)
@@ -29,6 +31,7 @@ export default function Home({ go }: { go: (tab: string) => void }) {
       ? addDays(today, est.daysAtPotential).toLocaleDateString('en-GB', {
           day: 'numeric',
           month: 'short',
+          year: 'numeric',
         })
       : null
 
@@ -48,56 +51,61 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       </div>
 
-      {/* Progress + vault + ETA — one combined card */}
-      <div className="card progress-compact">
-        <ProgressRing progress={pct} size={128} stroke={11}>
-          <div className="ring-amount sm">{eur(bal)}</div>
-          <div className="muted" style={{ fontSize: 11 }}>
-            {(pct * 100).toFixed(0)}%
+      {/* Progress ring with balance + still-to-go inside */}
+      <div className="card ring-card">
+        <ProgressRing progress={pct} size={190} stroke={13}>
+          <div className="ring-amount">{eur(bal)}</div>
+          <div className="muted" style={{ fontSize: 12 }}>
+            {(pct * 100).toFixed(1)}% saved
           </div>
-        </ProgressRing>
-        <div className="progress-compact-info">
           {unlocked ? (
-            <div className="unlocked-banner">🎉 Goal reached — unlocked!</div>
+            <div className="ring-sub" style={{ color: 'var(--accent)' }}>
+              🎉 unlocked!
+            </div>
           ) : (
-            <>
-              <div className="row between">
-                <span className="muted">Still to go</span>
-                <strong>{eur(rem)}</strong>
-              </div>
-              <div className="row between">
-                <span className="muted" style={{ whiteSpace: 'nowrap' }}>
-                  🔒 Vault
-                </span>
-                <span className="faint">Locked</span>
+            <div className="ring-sub">{eur(rem)} to go</div>
+          )}
+        </ProgressRing>
+      </div>
+
+      {/* Collapsible estimates */}
+      {!unlocked && (
+        <div className="card details">
+          <button
+            className="details-head"
+            onClick={() => setShowDetails((s) => !s)}
+            aria-expanded={showDetails}
+          >
+            <span>Estimates</span>
+            <span className={`chevron ${showDetails ? 'open' : ''}`}>⌄</span>
+          </button>
+          {showDetails && (
+            <div className="details-body fade-in">
+              <div className="stat-grid">
+                {coffee && (
+                  <div className="stat compact bare">
+                    <div className="stat-num">{est.skipsToGoal(coffee)}</div>
+                    <div className="stat-label">
+                      {coffee.emoji} coffees to skip
+                    </div>
+                  </div>
+                )}
+                <div className="stat compact bare">
+                  <div className="stat-num">
+                    {est.daysAtPotential ?? '—'}
+                    <span className="stat-unit">days</span>
+                  </div>
+                  <div className="stat-label">at your best pace</div>
+                </div>
               </div>
               {potential > 0 && etaDate && (
-                <div className="row between">
-                  <span className="muted">Unlock ~</span>
+                <div className="row between details-eta">
+                  <span className="muted">Unlock around</span>
                   <strong style={{ color: 'var(--accent)' }}>{etaDate}</strong>
                 </div>
               )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Estimates — compact tiles */}
-      {!unlocked && (
-        <div className="stat-grid">
-          {coffee && (
-            <div className="card stat compact">
-              <div className="stat-num">{est.skipsToGoal(coffee)}</div>
-              <div className="stat-label">{coffee.emoji} coffees to skip</div>
             </div>
           )}
-          <div className="card stat compact">
-            <div className="stat-num">
-              {est.daysAtPotential ?? '—'}
-              <span className="stat-unit">days</span>
-            </div>
-            <div className="stat-label">at your best pace</div>
-          </div>
         </div>
       )}
 
