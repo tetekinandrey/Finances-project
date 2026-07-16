@@ -8,9 +8,11 @@ import {
   eur,
   isUnlocked,
 } from '../logic'
+import { useTransfer } from '../useTransfer'
 
 export default function Home({ go }: { go: (tab: string) => void }) {
-  const { state, today } = useStore()
+  const { state, dispatch, today } = useStore()
+  const send = useTransfer()
   const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
   const unlocked = isUnlocked(state)
@@ -18,8 +20,41 @@ export default function Home({ go }: { go: (tab: string) => void }) {
   const potential = dailyPotential(state.habits)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
 
-  const answeredToday =
-    state.entries.find((e) => e.date === today)?.actions.length ?? 0
+  // The duel: the coffee habit (or the first active one) vs. the goal.
+  const duelHabit = coffee ?? state.habits.find((h) => h.active)
+  const todayEntry = state.entries.find((e) => e.date === today)
+  const duelAnswer = duelHabit
+    ? todayEntry?.actions.find((a) => a.habitId === duelHabit.id)
+    : undefined
+
+  const chooseGoal = () => {
+    if (!duelHabit) return
+    dispatch({
+      type: 'RECORD',
+      date: today,
+      action: { habitId: duelHabit.id, result: 'saved', amount: duelHabit.value },
+    })
+    send(duelHabit.value, duelHabit.id)?.catch((e) =>
+      console.warn('Vault transfer failed:', e),
+    )
+  }
+
+  const chooseHabit = () => {
+    if (!duelHabit) return
+    dispatch({
+      type: 'RECORD',
+      date: today,
+      action: {
+        habitId: duelHabit.id,
+        result: 'indulged',
+        amount: state.penalizeIndulgence ? -duelHabit.value : 0,
+      },
+    })
+  }
+
+  const undoDuel = () =>
+    duelHabit &&
+    dispatch({ type: 'CLEAR_DAY_HABIT', date: today, habitId: duelHabit.id })
 
   const etaDate =
     est.daysAtPotential != null
@@ -90,11 +125,59 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       )}
 
-      {/* Check-in CTA */}
-      <button className="btn primary block lg" onClick={() => go('checkin')}>
-        {answeredToday > 0
-          ? `Continue today's check-in (${answeredToday} logged)`
-          : "Start today's check-in"}
+      {/* Playful daily duel: the habit vs. the goal */}
+      {!unlocked && duelHabit && (
+        <div className="card duel">
+          {duelAnswer ? (
+            <div className="duel-result fade-in">
+              {duelAnswer.result === 'saved' ? (
+                <>
+                  <div className="duel-result-emoji">{state.goal.emoji}</div>
+                  <div className="duel-result-text">
+                    You picked <strong>{state.goal.name}</strong> — banked{' '}
+                    <strong style={{ color: 'var(--accent)' }}>
+                      {eur(duelHabit.value)}
+                    </strong>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="duel-result-emoji">{duelHabit.emoji}</div>
+                  <div className="duel-result-text">
+                    Enjoy your {duelHabit.name.toLowerCase()} — no guilt 💚
+                  </div>
+                </>
+              )}
+              <button className="btn ghost" onClick={undoDuel}>
+                Undo
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="duel-q">
+                {duelHabit.emoji} {duelHabit.name} or {state.goal.emoji}{' '}
+                {state.goal.name}?
+              </div>
+              <div className="duel-row">
+                <button className="duel-opt habit" onClick={chooseHabit}>
+                  <span className="duel-opt-emoji">{duelHabit.emoji}</span>
+                  <span className="duel-opt-name">{duelHabit.name}</span>
+                  <span className="duel-opt-sub">treat myself</span>
+                </button>
+                <span className="duel-vs">or</span>
+                <button className="duel-opt goal" onClick={chooseGoal}>
+                  <span className="duel-opt-emoji">{state.goal.emoji}</span>
+                  <span className="duel-opt-name">{state.goal.name}</span>
+                  <span className="duel-opt-sub">+{eur(duelHabit.value)}</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <button className="btn ghost block" onClick={() => go('checkin')}>
+        Log the rest of today →
       </button>
     </div>
   )
