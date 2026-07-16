@@ -35,21 +35,16 @@ export default function Home() {
 
   return (
     <div className="fade-in stack">
-      {/* Goal hero — compact banner */}
+      {/* Goal hero — compact image banner */}
       <div className="goal-hero compact">
         {state.goal.imageUrl ? (
           <img src={state.goal.imageUrl} alt={state.goal.name} />
         ) : (
           <div className="goal-hero-emoji">{state.goal.emoji}</div>
         )}
-        <div className="goal-hero-overlay">
-          <div className="pill">🎯 Saving for</div>
-          <h1>{state.goal.name}</h1>
-          <div className="muted">{eur(state.goal.targetPrice)}</div>
-        </div>
       </div>
 
-      {/* Progress ring with balance + still-to-go inside */}
+      {/* Progress ring with balance inside, goal info below */}
       <div className="card ring-card">
         <ProgressRing progress={pct} size={190} stroke={13}>
           <div className="ring-amount">{eur(bal)}</div>
@@ -64,6 +59,11 @@ export default function Home() {
             <div className="ring-sub">{eur(rem)} to go</div>
           )}
         </ProgressRing>
+        <div className="ring-goal">
+          <div className="ring-goal-label">🎯 Saving for</div>
+          <div className="ring-goal-name">{state.goal.name}</div>
+          <div className="muted">{eur(state.goal.targetPrice)}</div>
+        </div>
       </div>
 
       {/* Collapsible estimates */}
