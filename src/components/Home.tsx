@@ -7,15 +7,12 @@ import {
   estimates,
   eur,
   isUnlocked,
-  progress,
 } from '../logic'
-import ProgressRing from './ProgressRing'
 
 export default function Home({ go }: { go: (tab: string) => void }) {
   const { state, today } = useStore()
   const [showDetails, setShowDetails] = useState(false)
   const bal = balance(state)
-  const pct = progress(state)
   const unlocked = isUnlocked(state)
   const est = estimates(state)
   const potential = dailyPotential(state.habits)
@@ -41,20 +38,18 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         <h1>{state.goal.name}</h1>
       </div>
 
-      {/* Progress ring */}
-      <div className="card ring-card">
-        <ProgressRing progress={pct} size={190} stroke={13}>
-          <div className="ring-amount">{eur(bal)}</div>
-          {unlocked ? (
-            <div className="ring-sub" style={{ color: 'var(--accent)' }}>
-              🎉 unlocked!
-            </div>
-          ) : (
-            <div className="ring-sub">
-              saved from {eur(state.goal.targetPrice)} required
-            </div>
-          )}
-        </ProgressRing>
+      {/* Saved amount */}
+      <div className="card balance-card">
+        <div className="balance-amount">{eur(bal)}</div>
+        {unlocked ? (
+          <div className="ring-sub" style={{ color: 'var(--accent)' }}>
+            🎉 unlocked!
+          </div>
+        ) : (
+          <div className="ring-sub">
+            saved from {eur(state.goal.targetPrice)} required
+          </div>
+        )}
       </div>
 
       {/* Collapsible estimates */}

@@ -185,6 +185,21 @@
   min-width: 150px;
 }
 
+/* Saved-amount card (no ring) */
+.balance-card {
+  text-align: center;
+  padding: 28px 18px;
+}
+.balance-amount {
+  font-size: 46px;
+  font-weight: 780;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.balance-card .ring-sub {
+  margin-top: 10px;
+}
+
 /* Goal title above the ring */
 .goal-title {
   text-align: center;
