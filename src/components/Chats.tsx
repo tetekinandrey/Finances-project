@@ -133,7 +133,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           const net = e.actions.reduce((s, a) => s + a.amount, 0)
           const saved = e.actions.filter((a) => a.result === 'saved').length
           return (
-            <div key={e.date}>
+            <div key={e.date} className="chat-group">
               <div className="chat-day">{formatDate(e.date)}</div>
               <Bubble who="me">
                 {saved}/{e.actions.length} resisted · banked{' '}
@@ -178,7 +178,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
         {others.map((h) => {
           const a = answerOf(h)
           return (
-            <div key={h.id}>
+            <div key={h.id} className="chat-group">
               {a ? (
                 <Bubble who="me">
                   {a.result === 'saved'
