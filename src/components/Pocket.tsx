@@ -8,13 +8,8 @@ export default function Pocket({ go }: { go: (tab: string) => void }) {
   const { state } = useStore()
   const [openLeica, setOpenLeica] = useState(false)
 
-  if (openLeica)
-    return (
-      <GoalDetail
-        onBack={() => setOpenLeica(false)}
-        onOpenChat={() => go('chats')}
-      />
-    )
+  if (openLeica) return <GoalDetail onBack={() => setOpenLeica(false)} />
+
 
   if (!state.onboarded)
     return (

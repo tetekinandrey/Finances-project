@@ -2,13 +2,7 @@ import { useStore } from '../store'
 import { balance, estimates, eur, isUnlocked, progress } from '../logic'
 import type { Habit } from '../types'
 
-export default function GoalDetail({
-  onBack,
-  onOpenChat,
-}: {
-  onBack: () => void
-  onOpenChat: () => void
-}) {
+export default function GoalDetail({ onBack }: { onBack: () => void }) {
   const { state } = useStore()
   const bal = balance(state)
   const pct = progress(state)
@@ -64,9 +58,6 @@ export default function GoalDetail({
         </div>
       )}
 
-      <button className="btn primary block lg" onClick={onOpenChat}>
-        💬 Today&rsquo;s check-in
-      </button>
     </div>
   )
 }
