@@ -801,6 +801,93 @@
   font-size: 12px;
   pointer-events: none;
 }
+/* Onboarding cover image */
+.onb-cover {
+  position: relative;
+  height: 170px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(135deg, #1c2634, #12181f);
+  border: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+.onb-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.onb-cover-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+}
+.onb-cover-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(8, 11, 15, 0.7);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 15px;
+}
+.onb-cover-empty {
+  width: 100%;
+  height: 100%;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Category pills */
+.pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+  font-weight: 600;
+  font-size: 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cat-pill.on {
+  border-color: var(--accent-2);
+  background: #34d39914;
+  color: var(--text);
+}
+.cat-pill-check {
+  color: var(--accent);
+  font-size: 12px;
+}
+.onb-item-remove {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Card preview on the final step */
+.onb-cardpreview .onb-cardpreview-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
 .onb-actions {
   position: sticky;
   bottom: 0;

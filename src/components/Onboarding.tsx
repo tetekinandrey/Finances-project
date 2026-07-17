@@ -1,29 +1,71 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 import { eur } from '../logic'
-import { DEMO_ADDRESS, mockBalanceFor, shortAddress, uid } from '../seed'
+import { DEMO_ADDRESS, mockBalanceFor, uid } from '../seed'
 import type { Goal, Habit } from '../types'
 
-const STEPS = ['Goal', 'Items', 'Account', 'Review']
+const STEPS = ['Goal', 'Items', 'Details', 'Card', 'Done']
+
+interface Preset {
+  id: string
+  name: string
+  emoji: string
+  value: number
+  perWeek: number
+}
+
+const PRESETS: Preset[] = [
+  { id: 'coffee', name: 'Coffee out', emoji: '☕', value: 4, perWeek: 5 },
+  { id: 'eatout', name: 'Eating out', emoji: '🍽️', value: 10, perWeek: 4 },
+  { id: 'transport', name: 'Public transport', emoji: '🚇', value: 2.9, perWeek: 3 },
+  { id: 'groceries', name: 'Pricey groceries', emoji: '🛒', value: 10, perWeek: 2 },
+  { id: 'bars', name: 'Bars & drinks', emoji: '🍺', value: 12, perWeek: 2 },
+  { id: 'taxi', name: 'Taxis & rides', emoji: '🚕', value: 14, perWeek: 1 },
+  { id: 'snacks', name: 'Snacks', emoji: '🍫', value: 3, perWeek: 4 },
+  { id: 'subs', name: 'Subscriptions', emoji: '📺', value: 10, perWeek: 1 },
+  { id: 'shopping', name: 'Impulse shopping', emoji: '🛍️', value: 25, perWeek: 1 },
+]
+
+/** Keyword-based cover image (works in a real browser; sandbox blocks it). */
+export const coverUrl = (name: string, lock: number): string => {
+  const tags = name.trim().split(/\s+/).filter(Boolean).join(',')
+  return tags
+    ? `https://loremflickr.com/800/500/${encodeURIComponent(tags)}?lock=${lock}`
+    : ''
+}
 
 export default function Onboarding() {
   const { state, dispatch } = useStore()
   const [step, setStep] = useState(0)
-  const { goal, account } = state
+  const { goal } = state
   const activeItems = state.habits.filter((h) => h.active).length
 
   const canNext =
     step === 0
       ? goal.name.trim().length > 0 && goal.targetPrice > 0
-      : step === 1
+      : step === 1 || step === 2
         ? activeItems > 0
-        : step === 2
-          ? account.connected && account.balanceChecked && account.balance > 0
-          : true
+        : true
+
+  const finish = () => {
+    if (!state.account.connected) {
+      dispatch({
+        type: 'SET_ACCOUNT',
+        patch: {
+          address: DEMO_ADDRESS,
+          label: 'Main account',
+          connected: true,
+          balance: mockBalanceFor(DEMO_ADDRESS),
+          balanceChecked: true,
+        },
+      })
+    }
+    dispatch({ type: 'COMPLETE_ONBOARDING' })
+  }
 
   const next = () => {
     if (step < STEPS.length - 1) setStep((s) => s + 1)
-    else dispatch({ type: 'COMPLETE_ONBOARDING' })
+    else finish()
   }
   const back = () => setStep((s) => Math.max(0, s - 1))
 
@@ -35,7 +77,9 @@ export default function Onboarding() {
             <span className="dot" />
             Vault
           </div>
-          <span className="pill">Setup {step + 1}/{STEPS.length}</span>
+          <span className="pill">
+            Setup {step + 1}/{STEPS.length}
+          </span>
         </div>
 
         <div className="onb-dots">
@@ -46,9 +90,10 @@ export default function Onboarding() {
 
         <div className="onb-body fade-in" key={step}>
           {step === 0 && <GoalStep />}
-          {step === 1 && <ItemsStep />}
-          {step === 2 && <AccountStep />}
-          {step === 3 && <ReviewStep />}
+          {step === 1 && <PickStep />}
+          {step === 2 && <DetailsStep />}
+          {step === 3 && <CardStep />}
+          {step === 4 && <DoneStep />}
         </div>
       </div>
 
@@ -74,18 +119,68 @@ function GoalStep() {
   const set = (patch: Partial<Goal>) =>
     dispatch({ type: 'UPDATE_GOAL', goal: patch })
 
+  const [lock, setLock] = useState(1)
+  const [mode, setMode] = useState<'auto' | 'cleared'>('auto')
+  const [imgErr, setImgErr] = useState(false)
+
+  // Auto-fetch a cover image from the goal name.
+  useEffect(() => {
+    if (mode === 'auto' && goal.name.trim()) {
+      set({ imageUrl: coverUrl(goal.name, lock) })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goal.name, lock, mode])
+
+  useEffect(() => setImgErr(false), [goal.imageUrl])
+
   return (
     <>
       <h1 className="onb-title">What are you saving for?</h1>
       <p className="muted onb-sub">
-        Pick the one thing that will keep you motivated.
+        Type it and we&rsquo;ll pull a cover image automatically.
       </p>
 
-      <div className="onb-preview">
-        {goal.imageUrl ? (
-          <img src={goal.imageUrl} alt={goal.name} />
+      <div className="onb-cover">
+        {goal.imageUrl && !imgErr ? (
+          <>
+            <img
+              src={goal.imageUrl}
+              alt={goal.name}
+              onError={() => setImgErr(true)}
+            />
+            <div className="onb-cover-actions">
+              <button
+                className="onb-cover-btn"
+                title="Try another"
+                onClick={() => {
+                  setMode('auto')
+                  setLock((l) => l + 1)
+                }}
+              >
+                🔄
+              </button>
+              <button
+                className="onb-cover-btn"
+                title="Remove"
+                onClick={() => {
+                  setMode('cleared')
+                  set({ imageUrl: '' })
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </>
         ) : (
-          <div className="onb-preview-emoji">{goal.emoji || '🎯'}</div>
+          <button
+            className="onb-cover-empty"
+            onClick={() => {
+              setMode('auto')
+              setLock((l) => l + 1)
+            }}
+          >
+            {goal.name.trim() ? '🔍 Find a cover image' : '📷 Name it first'}
+          </button>
         )}
       </div>
 
@@ -98,41 +193,78 @@ function GoalStep() {
           onChange={(e) => set({ name: e.target.value })}
         />
       </div>
-      <div className="row" style={{ gap: 10 }}>
-        <div className="field" style={{ width: 84 }}>
-          <label>Emoji</label>
-          <input
-            value={goal.emoji}
-            maxLength={2}
-            style={{ textAlign: 'center' }}
-            onChange={(e) => set({ emoji: e.target.value })}
-          />
-        </div>
-        <div className="field grow">
-          <label>Target price €</label>
-          <input
-            type="number"
-            min="0"
-            value={goal.targetPrice || ''}
-            placeholder="3000"
-            onChange={(e) => set({ targetPrice: Number(e.target.value) || 0 })}
-          />
-        </div>
-      </div>
       <div className="field">
-        <label>Image URL (optional)</label>
+        <label>Target price €</label>
         <input
-          value={goal.imageUrl}
-          placeholder="https://…"
-          onChange={(e) => set({ imageUrl: e.target.value })}
+          type="number"
+          min="0"
+          value={goal.targetPrice || ''}
+          placeholder="3000"
+          onChange={(e) => set({ targetPrice: Number(e.target.value) || 0 })}
         />
       </div>
     </>
   )
 }
 
-function ItemsStep() {
+function PickStep() {
   const { state, dispatch } = useStore()
+
+  const isOn = (id: string) =>
+    state.habits.some((h) => h.id === id && h.active)
+
+  const toggle = (p: Preset) => {
+    const existing = state.habits.find((h) => h.id === p.id)
+    if (existing) {
+      dispatch({ type: 'UPDATE_HABIT', id: p.id, patch: { active: !existing.active } })
+    } else {
+      dispatch({
+        type: 'ADD_HABIT',
+        habit: {
+          id: p.id,
+          name: p.name,
+          emoji: p.emoji,
+          value: p.value,
+          perWeek: p.perWeek,
+          savePrompt: `Skipped ${p.name.toLowerCase()}?`,
+          indulgePrompt: `Had ${p.name.toLowerCase()} — worth it?`,
+          active: true,
+        },
+      })
+    }
+  }
+
+  return (
+    <>
+      <h1 className="onb-title">What will you save on?</h1>
+      <p className="muted onb-sub">
+        Pick the temptations you want to resist. You&rsquo;ll set the details
+        next.
+      </p>
+
+      <div className="pill-grid">
+        {PRESETS.map((p) => (
+          <button
+            key={p.id}
+            className={`cat-pill ${isOn(p.id) ? 'on' : ''}`}
+            onClick={() => toggle(p)}
+          >
+            <span>{p.emoji}</span>
+            {p.name}
+            {isOn(p.id) && <span className="cat-pill-check">✓</span>}
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
+function DetailsStep() {
+  const { state, dispatch } = useStore()
+  const active = state.habits.filter((h) => h.active)
+
+  const patch = (id: string, p: Partial<Habit>) =>
+    dispatch({ type: 'UPDATE_HABIT', id, patch: p })
 
   const addItem = () =>
     dispatch({
@@ -149,20 +281,17 @@ function ItemsStep() {
       },
     })
 
-  const patch = (id: string, p: Partial<Habit>) =>
-    dispatch({ type: 'UPDATE_HABIT', id, patch: p })
-
   return (
     <>
-      <h1 className="onb-title">What will you save on?</h1>
+      <h1 className="onb-title">Set the details</h1>
       <p className="muted onb-sub">
-        Set the price and how often you&rsquo;d normally spend — it makes your
-        savings estimate accurate.
+        Price and how often you&rsquo;d normally spend — this makes your savings
+        estimate accurate.
       </p>
 
       <div className="stack">
-        {state.habits.map((h) => (
-          <div key={h.id} className={`onb-item ${h.active ? 'on' : ''}`}>
+        {active.map((h) => (
+          <div key={h.id} className="onb-item on">
             <div className="onb-item-top">
               <input
                 className="onb-item-name"
@@ -170,7 +299,13 @@ function ItemsStep() {
                 placeholder="Item name"
                 onChange={(e) => patch(h.id, { name: e.target.value })}
               />
-              <Toggle on={h.active} onChange={(v) => patch(h.id, { active: v })} />
+              <button
+                className="onb-item-remove"
+                title="Remove"
+                onClick={() => patch(h.id, { active: false })}
+              >
+                ✕
+              </button>
             </div>
             <div className="onb-item-bottom">
               <div className="onb-item-field">
@@ -210,190 +345,67 @@ function ItemsStep() {
   )
 }
 
-function Toggle({
-  on,
-  onChange,
-}: {
-  on: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <button
-      className={`toggle ${on ? 'on' : ''}`}
-      onClick={() => onChange(!on)}
-      role="switch"
-      aria-checked={on}
-    >
-      <span className="knob" />
-    </button>
-  )
-}
-
-function AccountStep() {
-  const { state, dispatch } = useStore()
-  const { account, goal } = state
-  const [checking, setChecking] = useState(false)
-
-  const connectDemo = () =>
-    dispatch({
-      type: 'SET_ACCOUNT',
-      patch: {
-        address: DEMO_ADDRESS,
-        label: 'Demo account',
-        connected: true,
-        balanceChecked: false,
-        balance: 0,
-      },
-    })
-
-  const onAddress = (address: string) =>
-    dispatch({
-      type: 'SET_ACCOUNT',
-      patch: {
-        address,
-        label: account.label || 'Polkadot account',
-        connected: address.trim().length > 0,
-        balanceChecked: false,
-        balance: 0,
-      },
-    })
-
-  const checkBalance = () => {
-    setChecking(true)
-    // Simulated on-chain balance query (real transfer wiring lands in phase 2).
-    setTimeout(() => {
-      dispatch({
-        type: 'SET_ACCOUNT',
-        patch: {
-          balance: mockBalanceFor(account.address),
-          balanceChecked: true,
-        },
-      })
-      setChecking(false)
-    }, 900)
-  }
-
-  const enough = account.balance >= goal.targetPrice
+function CardStep() {
+  const { state } = useStore()
+  const { goal } = state
+  const [imgErr, setImgErr] = useState(false)
 
   return (
     <>
-      <h1 className="onb-title">Add your funding account</h1>
+      <h1 className="onb-title">Your {goal.name} card</h1>
       <p className="muted onb-sub">
-        The account where you hold the money. Each euro you save is transferred
-        from here into a locked <strong>{goal.name || 'goal'} vault</strong>.
+        Each time you skip an expensive activity, funds move from your main
+        account into this locked savings card.
       </p>
 
-      <div className="field">
-        <label>Account address</label>
-        <input
-          value={account.address}
-          placeholder="5Grwva…  (Polkadot address)"
-          onChange={(e) => onAddress(e.target.value)}
-        />
-      </div>
-
-      <button className="btn block" onClick={connectDemo}>
-        ⚡ Use a demo account
-      </button>
-
-      {account.connected && (
-        <div className="onb-account-card fade-in">
-          <div className="row between">
-            <div className="row" style={{ gap: 10 }}>
-              <span style={{ fontSize: 20 }}>🔗</span>
-              <div>
-                <div style={{ fontWeight: 650 }}>{account.label}</div>
-                <div className="faint" style={{ fontSize: 12 }}>
-                  {shortAddress(account.address)}
-                </div>
-              </div>
-            </div>
-            <span className="pill connected">Connected</span>
-          </div>
-
-          <div className="onb-balance">
-            {account.balanceChecked ? (
-              <>
-                <div className="row between">
-                  <span className="muted">Available balance</span>
-                  <strong>{eur(account.balance)}</strong>
-                </div>
-                <div
-                  className="onb-balance-status"
-                  style={{ color: enough ? 'var(--accent)' : 'var(--warn)' }}
-                >
-                  {enough
-                    ? '✅ Enough to fund your whole plan'
-                    : '⚠️ Covers part of the plan — funds can still be transferred'}
-                </div>
-              </>
-            ) : (
-              <button
-                className="btn block"
-                disabled={checking}
-                onClick={checkBalance}
-              >
-                {checking ? 'Checking balance…' : 'Check balance'}
-              </button>
-            )}
-          </div>
+      <div className="wallet-card savings onb-cardpreview">
+        <div className="wallet-top">
+          <span className="wallet-kind">Savings · {goal.name}</span>
+          <span className="wallet-chip">🔒</span>
         </div>
-      )}
-
-      <p className="faint onb-note">
-        🔒 Testnet only for now — the balance check is simulated and no real
-        funds move. Real Polkadot transfers come in a later update.
-      </p>
+        {goal.imageUrl && !imgErr ? (
+          <img
+            className="onb-cardpreview-img"
+            src={goal.imageUrl}
+            alt={goal.name}
+            onError={() => setImgErr(true)}
+          />
+        ) : null}
+        <div className="wallet-balance">{goal.name}</div>
+        <div className="wallet-sub">Goal · {eur(goal.targetPrice)}</div>
+      </div>
     </>
   )
 }
 
-function ReviewStep() {
+function DoneStep() {
   const { state } = useStore()
-  const { goal, account } = state
-  const items = state.habits.filter((h) => h.active)
+  const { goal } = state
   return (
     <>
-      <h1 className="onb-title">You&rsquo;re all set</h1>
+      <h1 className="onb-title">Two things are ready 🎉</h1>
       <p className="muted onb-sub">
-        Here&rsquo;s your plan. You can change any of it later.
+        That&rsquo;s all — here&rsquo;s what we&rsquo;ve set up for you.
       </p>
 
       <div className="onb-review-card">
-        <div className="row between">
-          <span className="muted">Saving for</span>
-          <strong>
-            {goal.emoji} {goal.name}
-          </strong>
+        <div className="row" style={{ gap: 12 }}>
+          <span style={{ fontSize: 26 }}>💬</span>
+          <span style={{ fontSize: 14 }}>
+            <strong>A daily check-up chat</strong>
+            <br />
+            <span className="muted">Add your entries here every day.</span>
+          </span>
         </div>
-        <div className="row between">
-          <span className="muted">Target</span>
-          <strong>{eur(goal.targetPrice)}</strong>
-        </div>
-        <div className="row between">
-          <span className="muted">Saving on</span>
-          <strong>
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-          </strong>
-        </div>
-        <div className="row between">
-          <span className="muted">Account</span>
-          <strong>{shortAddress(account.address)}</strong>
-        </div>
-        <div className="row between">
-          <span className="muted">Balance</span>
-          <strong>{eur(account.balance)}</strong>
-        </div>
-        <div className="row between">
-          <span className="muted">Item vault</span>
-          <span className="pill">🔒 {goal.name} · €0 locked</span>
+        <div className="row" style={{ gap: 12 }}>
+          <span style={{ fontSize: 26 }}>🪪</span>
+          <span style={{ fontSize: 14 }}>
+            <strong>A {goal.name} card in your Pocket</strong>
+            <br />
+            <span className="muted">Where your saved funds are stored.</span>
+          </span>
         </div>
       </div>
-
-      <p className="faint onb-note">
-        Each day, mark what you skipped — the value moves into your locked
-        vault. Reach {eur(goal.targetPrice)} and it unlocks.
-      </p>
     </>
   )
 }
