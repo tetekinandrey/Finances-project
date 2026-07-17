@@ -2,17 +2,18 @@ import { useState } from 'react'
 import { StoreProvider, useStore } from './store'
 import Chats from './components/Chats'
 import Pocket from './components/Pocket'
+import Browse from './components/Browse'
 import Settings from './components/Settings'
-import Onboarding from './components/Onboarding'
 import StateSimulator from './components/StateSimulator'
 import { shortAddress } from './seed'
 import './app.css'
 
-type Tab = 'chats' | 'pocket' | 'settings'
+type Tab = 'chats' | 'pocket' | 'browse' | 'settings'
 
 const NAV: { id: Tab; label: string; ico: string }[] = [
   { id: 'chats', label: 'Chats', ico: '💬' },
   { id: 'pocket', label: 'Pocket', ico: '🪪' },
+  { id: 'browse', label: 'Browse', ico: '🧭' },
   { id: 'settings', label: 'Settings', ico: '⚙️' },
 ]
 
@@ -26,15 +27,7 @@ export default function App() {
 
 function Shell() {
   const { state } = useStore()
-  const [tab, setTab] = useState<Tab>('pocket')
-
-  if (!state.onboarded)
-    return (
-      <>
-        <Onboarding />
-        <StateSimulator setTab={(t) => setTab(t as Tab)} />
-      </>
-    )
+  const [tab, setTab] = useState<Tab>(state.onboarded ? 'pocket' : 'browse')
 
   return (
     <>
@@ -51,8 +44,9 @@ function Shell() {
           </span>
         </div>
 
-        {tab === 'chats' && <Chats />}
+        {tab === 'chats' && <Chats go={(t) => setTab(t as Tab)} />}
         {tab === 'pocket' && <Pocket go={(t) => setTab(t as Tab)} />}
+        {tab === 'browse' && <Browse />}
         {tab === 'settings' && <Settings />}
       </div>
 

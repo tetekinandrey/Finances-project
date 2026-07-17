@@ -4,11 +4,30 @@ import { eur, formatDate } from '../logic'
 import { useTransfer } from '../useTransfer'
 import type { DayAction, Habit } from '../types'
 
-export default function Chats() {
+export default function Chats({ go }: { go: (tab: string) => void }) {
   const { state } = useStore()
   const [open, setOpen] = useState(false)
 
   if (open) return <SavingsThread onBack={() => setOpen(false)} />
+
+  if (!state.onboarded)
+    return (
+      <div className="fade-in stack">
+        <div className="checkin-head">
+          <h2>Chats</h2>
+          <div className="muted">Your saving conversations</div>
+        </div>
+        <div className="card empty">
+          <div style={{ fontSize: 40 }}>💬</div>
+          <p className="muted">
+            No conversations yet. Open the Vault app in Browse to start saving.
+          </p>
+          <button className="btn" onClick={() => go('browse')}>
+            Go to Browse →
+          </button>
+        </div>
+      </div>
+    )
 
   const active = state.habits.filter((h) => h.active)
   const answeredToday =

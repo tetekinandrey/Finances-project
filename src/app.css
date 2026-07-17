@@ -435,6 +435,119 @@
   font-size: 20px;
 }
 
+/* Browse — app launcher ------------------------------------ */
+.app-launcher {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.app-favicon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: radial-gradient(120% 120% at 30% 20%, #1d2a3a, #0e1116);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.app-favicon-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent);
+}
+.app-launcher-meta {
+  flex: 1;
+  min-width: 0;
+}
+.app-launcher-name {
+  display: block;
+  font-weight: 700;
+  font-size: 17px;
+}
+.app-launcher-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-launcher-go {
+  color: var(--faint);
+  font-size: 20px;
+}
+
+/* Browsed app overlay -------------------------------------- */
+.browsed {
+  position: fixed;
+  inset: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  z-index: 50;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  animation: browsed-in 0.28s ease;
+}
+@keyframes browsed-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.browsed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-elev);
+}
+.browsed-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+.browsed-url {
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+}
+.browsed-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+.browsed-scroll .app {
+  min-height: auto;
+  padding-bottom: 24px;
+}
+.browsed-nav {
+  position: static;
+}
+
 /* State simulator (demo tool) ------------------------------ */
 .sim {
   position: fixed;

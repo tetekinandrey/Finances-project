@@ -16,6 +16,25 @@ export default function Pocket({ go }: { go: (tab: string) => void }) {
       />
     )
 
+  if (!state.onboarded)
+    return (
+      <div className="fade-in stack">
+        <div className="checkin-head">
+          <h2>Pocket</h2>
+          <div className="muted">Your cards</div>
+        </div>
+        <div className="card empty">
+          <div style={{ fontSize: 40 }}>🪪</div>
+          <p className="muted">
+            No cards yet. Open the Vault app in Browse to set up your savings.
+          </p>
+          <button className="btn" onClick={() => go('browse')}>
+            Go to Browse →
+          </button>
+        </div>
+      </div>
+    )
+
   const bal = balance(state)
   const pct = progress(state)
   const { account, goal } = state
