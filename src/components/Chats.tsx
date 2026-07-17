@@ -84,14 +84,16 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     })
     send(h.value, h.id)?.catch((e) => console.warn('transfer failed', e))
   }
-  const treat = (h: Habit) => {
+  const treat = (h: Habit, worthIt?: boolean | null) => {
+    // Indulging is guilt-free: no funds move to the vault (nor out of it).
     dispatch({
       type: 'RECORD',
       date: day,
       action: {
         habitId: h.id,
         result: 'indulged',
-        amount: state.penalizeIndulgence ? -h.value : 0,
+        amount: 0,
+        worthIt: worthIt ?? null,
       },
     })
   }
@@ -110,11 +112,15 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   // Conversational flow state for today.
   const duelAnswer = duelHabit ? answerOf(duelHabit) : undefined
   const duelAnswered = !!duelAnswer
+  // Indulging needs the "was it good?" follow-up before we move on.
+  const duelResolved =
+    duelAnswered &&
+    (duelAnswer!.result === 'saved' || duelAnswer!.worthIt != null)
   const anyOtherAnswered = others.some((h) => answerOf(h))
   const othersAllAnswered = others.length > 0 && others.every((h) => answerOf(h))
   const moreState = askedMore ?? (anyOtherAnswered ? 'more' : null)
   const completed =
-    duelAnswered &&
+    duelResolved &&
     (others.length === 0 ||
       moreState === 'none' ||
       villainsDone ||
@@ -182,13 +188,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
         {duelHabit && (
           <>
             <Bubble who="app">What&rsquo;s up today?</Bubble>
-            {duelAnswer ? (
-              <Bubble who="me">
-                {duelAnswer.result === 'saved'
-                  ? `${state.goal.emoji} ${state.goal.name} — banked €${duelHabit.value}`
-                  : `${duelHabit.emoji} ${duelHabit.name}, just this once`}
-              </Bubble>
-            ) : (
+            {!duelAnswer ? (
               <div className="chat-choices">
                 <button
                   className="chat-choice treat"
@@ -204,12 +204,50 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                   <span className="chat-choice-sub">+{eur(duelHabit.value)}</span>
                 </button>
               </div>
+            ) : duelAnswer.result === 'saved' ? (
+              <Bubble who="me">
+                {state.goal.emoji} {state.goal.name} — banked €{duelHabit.value}
+              </Bubble>
+            ) : (
+              <>
+                <Bubble who="me">
+                  {duelHabit.emoji} {duelHabit.name}, just this once
+                </Bubble>
+                {duelAnswer.worthIt == null ? (
+                  <>
+                    <Bubble who="app">
+                      Was that {duelHabit.name.toLowerCase()} good, no regrets?
+                    </Bubble>
+                    <div className="chat-choices">
+                      <button
+                        className="chat-choice save"
+                        onClick={() => treat(duelHabit, true)}
+                      >
+                        💚 Good, no regrets
+                      </button>
+                      <button
+                        className="chat-choice treat"
+                        onClick={() => treat(duelHabit, false)}
+                      >
+                        😕 Not really
+                      </button>
+                    </div>
+                  </>
+                ) : duelAnswer.worthIt ? (
+                  <Bubble who="app">Let&rsquo;s gooo! 🎉 Enjoy every sip.</Bubble>
+                ) : (
+                  <Bubble who="app">
+                    Noted 👀 Next time, skipping it gets you closer to your{' '}
+                    {state.goal.name}.
+                  </Bubble>
+                )}
+              </>
             )}
           </>
         )}
 
-        {/* Q2 — any other villains today? (only after Q1 is answered) */}
-        {duelAnswered && others.length > 0 && (
+        {/* Q2 — any other villains today? (only after Q1 is resolved) */}
+        {duelResolved && others.length > 0 && (
           <>
             <Bubble who="app">Any other villains today? 😈</Bubble>
 
@@ -243,8 +281,8 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                     return (
                       <Bubble key={h.id} who="me">
                         {a.result === 'saved'
-                          ? `${h.emoji} skipped ${h.name.toLowerCase()} — +${eur(h.value)}`
-                          : `${h.emoji} treated myself`}
+                          ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(h.value)}`
+                          : `${h.emoji} had ${h.name.toLowerCase()} — no funds added`}
                       </Bubble>
                     )
                   })}
@@ -301,7 +339,9 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
         <div className="sheet" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-handle" />
           <div className="sheet-title">Which villains today? 😈</div>
-          <div className="sheet-sub">Skip to bank the value, or treat yourself.</div>
+          <div className="sheet-sub">
+            Saved adds to your vault. Had it = no funds moved.
+          </div>
           <div className="stack" style={{ marginTop: 14 }}>
             {others.map((h) => {
               const a = answerOf(h)
@@ -318,15 +358,15 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                           a.result === 'saved' ? 'var(--accent)' : 'var(--gold)',
                       }}
                     >
-                      {a.result === 'saved' ? `skipped +${eur(h.value)}` : 'treated'}
+                      {a.result === 'saved' ? `saved +${eur(h.value)}` : 'had it'}
                     </span>
                   ) : (
                     <div className="chat-villain-btns">
                       <button className="chat-mini save" onClick={() => save(h)}>
-                        Skip +{eur(h.value)}
+                        Save +{eur(h.value)}
                       </button>
                       <button className="chat-mini treat" onClick={() => treat(h)}>
-                        Treat
+                        I had it
                       </button>
                     </div>
                   )}
