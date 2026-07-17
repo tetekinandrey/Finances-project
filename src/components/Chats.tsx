@@ -254,17 +254,26 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
 
         {/* Completion */}
         {completed && (
-          <Bubble who="app">
-            That&rsquo;s it for today ✌️ You banked{' '}
-            <strong
-              style={{
-                color: bankedToday >= 0 ? 'var(--accent)' : 'var(--danger)',
-              }}
-            >
-              {eur(bankedToday)}
-            </strong>
-            . Stay stoic — see you tomorrow!
-          </Bubble>
+          <>
+            <Bubble who="app">
+              That&rsquo;s it for today ✌️ Stay stoic — see you tomorrow!
+            </Bubble>
+            <Bubble who="app">
+              {bankedToday > 0 ? (
+                <>
+                  💸 <strong>{eur(bankedToday)}</strong> transferred to your{' '}
+                  {state.goal.name} savings card in Pocket 🔒
+                </>
+              ) : bankedToday < 0 ? (
+                <>
+                  📉 <strong>{eur(-bankedToday)}</strong> came off your{' '}
+                  {state.goal.name} card today.
+                </>
+              ) : (
+                <>➖ Nothing moved today — but no slip-ups either.</>
+              )}
+            </Bubble>
+          </>
         )}
       </div>
     </div>
