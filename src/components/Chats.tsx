@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useStore } from '../store'
 import { balance, eur, formatDate } from '../logic'
 import { useTransfer } from '../useTransfer'
@@ -60,9 +60,8 @@ export default function Chats({ go }: { go: (tab: string) => void }) {
 function SavingsThread({ onBack }: { onBack: () => void }) {
   const { state, dispatch, today } = useStore()
   const send = useTransfer()
-  const [askedMore, setAskedMore] = useState<'more' | 'none' | null>(null)
+  const [askedMore, setAskedMore] = useState<'none' | null>(null)
   const [showVillains, setShowVillains] = useState(false)
-  const [villainsDone, setVillainsDone] = useState(false)
 
   const day = state.simDate
   const dayLabel = day === today ? 'Today' : formatDate(day)
@@ -105,7 +104,6 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const nextDay = () => {
     setAskedMore(null)
     setShowVillains(false)
-    setVillainsDone(false)
     dispatch({ type: 'ADVANCE_DAY' })
   }
 
@@ -116,33 +114,18 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const duelResolved =
     duelAnswered &&
     (duelAnswer!.result === 'saved' || duelAnswer!.worthIt != null)
-  const anyOtherAnswered = others.some((h) => answerOf(h))
   const villainResolved = (h: Habit) => {
     const a = answerOf(h)
     return !!a && (a.result === 'saved' || a.worthIt != null)
   }
-  const othersAllResolved = others.length > 0 && others.every(villainResolved)
-  const moreState = askedMore ?? (anyOtherAnswered ? 'more' : null)
+  const resolvedOthers = others.filter(villainResolved)
+  const unresolvedCount = others.length - resolvedOthers.length
+  const saidNo = askedMore === 'none'
   const completed =
     duelResolved &&
-    (others.length === 0 ||
-      moreState === 'none' ||
-      villainsDone ||
-      othersAllResolved)
+    (others.length === 0 || saidNo || unresolvedCount === 0)
 
-  // Closing the villain sheet finishes the villain phase (if any were picked).
-  const closeVillains = () => {
-    setShowVillains(false)
-    if (anyOtherAnswered) setVillainsDone(true)
-  }
-
-  // Auto-finish once every option has been resolved.
-  useEffect(() => {
-    if (showVillains && othersAllResolved) {
-      setShowVillains(false)
-      setVillainsDone(true)
-    }
-  }, [showVillains, othersAllResolved])
+  const closeVillains = () => setShowVillains(false)
 
   // Past days (before the current sim day) for scrollback.
   const past = state.entries
@@ -255,7 +238,26 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           <>
             <Bubble who="app">Any other villains today? 😈</Bubble>
 
-            {moreState === null && (
+            {resolvedOthers.map((h) => {
+              const a = answerOf(h)!
+              return (
+                <Bubble key={h.id} who="me">
+                  {a.result === 'saved'
+                    ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(h.value)}`
+                    : `${h.emoji} had ${h.name.toLowerCase()}${
+                        a.worthIt == null
+                          ? ''
+                          : a.worthIt
+                            ? ' — worth it 💚'
+                            : ' — not really 😕'
+                      }`}
+                </Bubble>
+              )
+            })}
+
+            {saidNo ? (
+              <Bubble who="me">No, that&rsquo;s it for today</Bubble>
+            ) : unresolvedCount > 0 ? (
               <div className="chat-choices">
                 <button
                   className="chat-choice treat"
@@ -270,42 +272,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                   😈 There&rsquo;s more
                 </button>
               </div>
-            )}
-
-            {moreState === 'none' && (
-              <Bubble who="me">No, that&rsquo;s it for today</Bubble>
-            )}
-
-            {moreState === 'more' && (
-              <>
-                {others
-                  .filter((h) => answerOf(h))
-                  .map((h) => {
-                    const a = answerOf(h)!
-                    return (
-                      <Bubble key={h.id} who="me">
-                        {a.result === 'saved'
-                          ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(h.value)}`
-                          : `${h.emoji} had ${h.name.toLowerCase()}${
-                              a.worthIt == null
-                                ? ''
-                                : a.worthIt
-                                  ? ' — worth it 💚'
-                                  : ' — not really 😕'
-                            }`}
-                      </Bubble>
-                    )
-                  })}
-                {!showVillains && !othersAllResolved && !villainsDone && (
-                  <button
-                    className="btn block chat-next"
-                    onClick={() => setShowVillains(true)}
-                  >
-                    😈 Choose villains
-                  </button>
-                )}
-              </>
-            )}
+            ) : null}
           </>
         )}
 
@@ -348,7 +315,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
       <div className="sheet-backdrop" onClick={closeVillains}>
         <div className="sheet" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-handle" />
-          <div className="sheet-title">Which villains today? 😈</div>
+          <div className="sheet-title">Pick a villain 😈</div>
           <div className="sheet-sub">
             Saved adds to your vault. Had it = no funds moved.
           </div>
@@ -365,20 +332,32 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                     <div className="chat-villain-btns">
                       <button
                         className="chat-mini save"
-                        onClick={() => treat(h, true)}
+                        onClick={() => {
+                          treat(h, true)
+                          setShowVillains(false)
+                        }}
                       >
                         💚 Worth it
                       </button>
                       <button
                         className="chat-mini treat"
-                        onClick={() => treat(h, false)}
+                        onClick={() => {
+                          treat(h, false)
+                          setShowVillains(false)
+                        }}
                       >
                         😕 Not really
                       </button>
                     </div>
                   ) : (
                     <div className="chat-villain-btns">
-                      <button className="chat-mini save" onClick={() => save(h)}>
+                      <button
+                        className="chat-mini save"
+                        onClick={() => {
+                          save(h)
+                          setShowVillains(false)
+                        }}
+                      >
                         Save +{eur(h.value)}
                       </button>
                       <button className="chat-mini treat" onClick={() => treat(h)}>
@@ -391,11 +370,11 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
             })}
           </div>
           <button
-            className="btn primary block"
+            className="btn ghost block"
             style={{ marginTop: 16 }}
             onClick={closeVillains}
           >
-            Done
+            Cancel
           </button>
         </div>
       </div>
