@@ -16,9 +16,14 @@ export const balance = (state: AppState): number =>
     0,
   )
 
-/** Euros you can still bank in a single perfect day. */
+/**
+ * Realistic euros banked per day, weighted by how often you'd normally spend
+ * on each habit (value × times-per-week ÷ 7).
+ */
 export const dailyPotential = (habits: Habit[]): number =>
-  habits.filter((h) => h.active).reduce((s, h) => s + h.value, 0)
+  habits
+    .filter((h) => h.active)
+    .reduce((s, h) => s + (h.value * (h.perWeek ?? 7)) / 7, 0)
 
 export const remaining = (state: AppState): number =>
   Math.max(0, state.goal.targetPrice - balance(state))

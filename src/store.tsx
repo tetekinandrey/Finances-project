@@ -117,9 +117,20 @@ function load(): AppState {
     if (!raw) return defaultState
     const parsed = JSON.parse(raw) as Partial<AppState>
     // Existing installs predate onboarding — treat them as already set up.
+    const perWeekDefaults: Record<string, number> = {
+      coffee: 5,
+      eatout: 4,
+      transport: 3,
+      groceries: 2,
+    }
+    const habits = (parsed.habits ?? defaultState.habits).map((h) => ({
+      ...h,
+      perWeek: h.perWeek ?? perWeekDefaults[h.id] ?? 3,
+    }))
     return {
       ...defaultState,
       ...parsed,
+      habits,
       onboarded: parsed.onboarded ?? true,
       simDate: parsed.simDate || todayISO(),
     }

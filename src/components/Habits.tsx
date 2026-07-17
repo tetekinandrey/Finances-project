@@ -13,6 +13,7 @@ export default function Habits() {
       name: 'New habit',
       emoji: '💸',
       value: 5,
+      perWeek: 3,
       savePrompt: 'Did you resist this expense today?',
       indulgePrompt: 'Spent on it — was it worth it?',
       active: true,
@@ -97,7 +98,7 @@ function HabitRow({ habit }: { habit: Habit }) {
                 onChange={(e) => patch({ name: e.target.value })}
               />
             </div>
-            <div className="field" style={{ width: 110 }}>
+            <div className="field" style={{ width: 90 }}>
               <label>Value €</label>
               <input
                 type="number"
@@ -107,6 +108,17 @@ function HabitRow({ habit }: { habit: Habit }) {
                 onChange={(e) => patch({ value: Number(e.target.value) || 0 })}
               />
             </div>
+          </div>
+          <div className="field">
+            <label>Times per week</label>
+            <input
+              type="number"
+              min="0"
+              max="7"
+              step="1"
+              value={habit.perWeek ?? 0}
+              onChange={(e) => patch({ perWeek: Number(e.target.value) || 0 })}
+            />
           </div>
           <div className="field">
             <label>Daily question</label>

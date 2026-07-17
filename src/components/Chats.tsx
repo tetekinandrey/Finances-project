@@ -117,14 +117,18 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     duelAnswered &&
     (duelAnswer!.result === 'saved' || duelAnswer!.worthIt != null)
   const anyOtherAnswered = others.some((h) => answerOf(h))
-  const othersAllAnswered = others.length > 0 && others.every((h) => answerOf(h))
+  const villainResolved = (h: Habit) => {
+    const a = answerOf(h)
+    return !!a && (a.result === 'saved' || a.worthIt != null)
+  }
+  const othersAllResolved = others.length > 0 && others.every(villainResolved)
   const moreState = askedMore ?? (anyOtherAnswered ? 'more' : null)
   const completed =
     duelResolved &&
     (others.length === 0 ||
       moreState === 'none' ||
       villainsDone ||
-      othersAllAnswered)
+      othersAllResolved)
 
   // Closing the villain sheet finishes the villain phase (if any were picked).
   const closeVillains = () => {
@@ -132,13 +136,13 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     if (anyOtherAnswered) setVillainsDone(true)
   }
 
-  // Auto-finish once every option has been answered.
+  // Auto-finish once every option has been resolved.
   useEffect(() => {
-    if (showVillains && othersAllAnswered) {
+    if (showVillains && othersAllResolved) {
       setShowVillains(false)
       setVillainsDone(true)
     }
-  }, [showVillains, othersAllAnswered])
+  }, [showVillains, othersAllResolved])
 
   // Past days (before the current sim day) for scrollback.
   const past = state.entries
@@ -282,11 +286,17 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                       <Bubble key={h.id} who="me">
                         {a.result === 'saved'
                           ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(h.value)}`
-                          : `${h.emoji} had ${h.name.toLowerCase()} — no funds added`}
+                          : `${h.emoji} had ${h.name.toLowerCase()}${
+                              a.worthIt == null
+                                ? ''
+                                : a.worthIt
+                                  ? ' — worth it 💚'
+                                  : ' — not really 😕'
+                            }`}
                       </Bubble>
                     )
                   })}
-                {!showVillains && !othersAllAnswered && !villainsDone && (
+                {!showVillains && !othersAllResolved && !villainsDone && (
                   <button
                     className="btn block chat-next"
                     onClick={() => setShowVillains(true)}
@@ -343,23 +353,29 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
             Saved adds to your vault. Had it = no funds moved.
           </div>
           <div className="stack" style={{ marginTop: 14 }}>
-            {others.map((h) => {
+            {others.filter((h) => !villainResolved(h)).map((h) => {
               const a = answerOf(h)
+              const askingWorth = a && a.result === 'indulged'
               return (
                 <div key={h.id} className="chat-villain">
                   <span className="chat-villain-name">
-                    {h.emoji} {h.name}
+                    {h.emoji} {askingWorth ? `${h.name} — worth it?` : h.name}
                   </span>
-                  {a ? (
-                    <span
-                      className="villain-answered"
-                      style={{
-                        color:
-                          a.result === 'saved' ? 'var(--accent)' : 'var(--gold)',
-                      }}
-                    >
-                      {a.result === 'saved' ? `saved +${eur(h.value)}` : 'had it'}
-                    </span>
+                  {askingWorth ? (
+                    <div className="chat-villain-btns">
+                      <button
+                        className="chat-mini save"
+                        onClick={() => treat(h, true)}
+                      >
+                        💚 Worth it
+                      </button>
+                      <button
+                        className="chat-mini treat"
+                        onClick={() => treat(h, false)}
+                      >
+                        😕 Not really
+                      </button>
+                    </div>
                   ) : (
                     <div className="chat-villain-btns">
                       <button className="chat-mini save" onClick={() => save(h)}>

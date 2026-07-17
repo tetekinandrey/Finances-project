@@ -10,6 +10,8 @@ export interface Habit {
   emoji: string
   /** Euros moved to savings each time you resist this expense. */
   value: number
+  /** How many times a week you'd normally spend on this (for estimates). */
+  perWeek: number
   /** Yes/no question shown at the daily check-in. */
   savePrompt: string
   /** Supportive line shown when you treat yourself instead. */

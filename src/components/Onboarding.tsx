@@ -142,6 +142,7 @@ function ItemsStep() {
         name: '',
         emoji: '💸',
         value: 5,
+        perWeek: 3,
         savePrompt: 'Did you resist this expense today?',
         indulgePrompt: 'Spent on it — was it worth it?',
         active: true,
@@ -155,35 +156,49 @@ function ItemsStep() {
     <>
       <h1 className="onb-title">What will you save on?</h1>
       <p className="muted onb-sub">
-        Each day you skip one of these, its value goes to your vault. Keep the
-        ones that fit, tweak the amounts, or add your own.
+        Set the price and how often you&rsquo;d normally spend — it makes your
+        savings estimate accurate.
       </p>
 
       <div className="stack">
         {state.habits.map((h) => (
           <div key={h.id} className={`onb-item ${h.active ? 'on' : ''}`}>
-            <input
-              className="onb-item-name"
-              value={h.name}
-              placeholder="Item name"
-              onChange={(e) => patch(h.id, { name: e.target.value })}
-            />
-            <div className="onb-item-val">
+            <div className="onb-item-top">
               <input
-                type="number"
-                min="0"
-                step="0.1"
-                value={h.value || ''}
-                onChange={(e) =>
-                  patch(h.id, { value: Number(e.target.value) || 0 })
-                }
+                className="onb-item-name"
+                value={h.name}
+                placeholder="Item name"
+                onChange={(e) => patch(h.id, { name: e.target.value })}
               />
-              <span className="onb-item-cur">€</span>
+              <Toggle on={h.active} onChange={(v) => patch(h.id, { active: v })} />
             </div>
-            <Toggle
-              on={h.active}
-              onChange={(v) => patch(h.id, { active: v })}
-            />
+            <div className="onb-item-bottom">
+              <div className="onb-item-field">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={h.value || ''}
+                  onChange={(e) =>
+                    patch(h.id, { value: Number(e.target.value) || 0 })
+                  }
+                />
+                <span className="onb-item-suffix">€ each</span>
+              </div>
+              <div className="onb-item-field">
+                <input
+                  type="number"
+                  min="0"
+                  max="7"
+                  step="1"
+                  value={h.perWeek ?? 0}
+                  onChange={(e) =>
+                    patch(h.id, { perWeek: Number(e.target.value) || 0 })
+                  }
+                />
+                <span className="onb-item-suffix">×/week</span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
