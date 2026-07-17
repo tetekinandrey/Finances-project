@@ -98,9 +98,18 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     })
   }
 
-  const doneCount = active.filter((h) => answerOf(h)).length
-  const allDone = doneCount === active.length && active.length > 0
   const bankedToday = todayEntry?.actions.reduce((s, a) => s + a.amount, 0) ?? 0
+
+  // Conversational flow state for today.
+  const [askedMore, setAskedMore] = useState<'more' | 'none' | null>(null)
+  const duelAnswer = duelHabit ? answerOf(duelHabit) : undefined
+  const duelAnswered = !!duelAnswer
+  const anyOtherAnswered = others.some((h) => answerOf(h))
+  const othersAllAnswered = others.length > 0 && others.every((h) => answerOf(h))
+  const moreState = askedMore ?? (anyOtherAnswered ? 'more' : null)
+  const completed =
+    duelAnswered &&
+    (others.length === 0 || moreState === 'none' || othersAllAnswered)
 
   // Past days (most recent 6, excluding today) for scrollback.
   const past = state.entries
@@ -125,8 +134,8 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
 
       <div className="chat-thread">
         <Bubble who="app">
-          Every day you resist, you get closer to your {state.goal.name}. Let&rsquo;s
-          go 💪
+          In this chat you check up daily — stay stoic about your{' '}
+          {state.goal.name} savings plan. 🧘
         </Bubble>
 
         {past.map((e) => {
@@ -145,24 +154,28 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
 
         <div className="chat-day">Today</div>
 
+        {/* Q1 — what's up today? */}
         {duelHabit && (
           <>
-            <Bubble who="app">
-              {duelHabit.emoji} {duelHabit.name} or {state.goal.emoji}{' '}
-              {state.goal.name}?
-            </Bubble>
-            {answerOf(duelHabit) ? (
+            <Bubble who="app">What&rsquo;s up today?</Bubble>
+            {duelAnswer ? (
               <Bubble who="me">
-                {answerOf(duelHabit)!.result === 'saved'
+                {duelAnswer.result === 'saved'
                   ? `${state.goal.emoji} ${state.goal.name} — banked €${duelHabit.value}`
-                  : `${duelHabit.emoji} treated myself`}
+                  : `${duelHabit.emoji} ${duelHabit.name}, just this once`}
               </Bubble>
             ) : (
               <div className="chat-choices">
-                <button className="chat-choice treat" onClick={() => treat(duelHabit)}>
+                <button
+                  className="chat-choice treat"
+                  onClick={() => treat(duelHabit)}
+                >
                   {duelHabit.emoji} {duelHabit.name}
                 </button>
-                <button className="chat-choice save" onClick={() => save(duelHabit)}>
+                <button
+                  className="chat-choice save"
+                  onClick={() => save(duelHabit)}
+                >
                   {state.goal.emoji} {state.goal.name}
                   <span className="chat-choice-sub">+{eur(duelHabit.value)}</span>
                 </button>
@@ -171,46 +184,86 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           </>
         )}
 
-        {others.length > 0 && (
-          <Bubble who="app">And the other villains today? 😈</Bubble>
+        {/* Q2 — any other villains today? (only after Q1 is answered) */}
+        {duelAnswered && others.length > 0 && (
+          <>
+            <Bubble who="app">Any other villains today? 😈</Bubble>
+
+            {moreState === null && (
+              <div className="chat-choices">
+                <button
+                  className="chat-choice treat"
+                  onClick={() => setAskedMore('none')}
+                >
+                  ✌️ No, that&rsquo;s it
+                </button>
+                <button
+                  className="chat-choice save"
+                  onClick={() => setAskedMore('more')}
+                >
+                  😈 There&rsquo;s more
+                </button>
+              </div>
+            )}
+
+            {moreState === 'none' && (
+              <Bubble who="me">No, that&rsquo;s it for today</Bubble>
+            )}
+
+            {moreState === 'more' && (
+              <>
+                <Bubble who="me">There&rsquo;s more…</Bubble>
+                {others.map((h) => {
+                  const a = answerOf(h)
+                  return (
+                    <div key={h.id} className="chat-group">
+                      {a ? (
+                        <Bubble who="me">
+                          {a.result === 'saved'
+                            ? `${h.emoji} skipped ${h.name.toLowerCase()} — +${eur(h.value)}`
+                            : `${h.emoji} treated myself`}
+                        </Bubble>
+                      ) : (
+                        <div className="chat-villain">
+                          <span className="chat-villain-name">
+                            {h.emoji} {h.name}
+                          </span>
+                          <div className="chat-villain-btns">
+                            <button
+                              className="chat-mini save"
+                              onClick={() => save(h)}
+                            >
+                              Skip +{eur(h.value)}
+                            </button>
+                            <button
+                              className="chat-mini treat"
+                              onClick={() => treat(h)}
+                            >
+                              Treat
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </>
+            )}
+          </>
         )}
 
-        {others.map((h) => {
-          const a = answerOf(h)
-          return (
-            <div key={h.id} className="chat-group">
-              {a ? (
-                <Bubble who="me">
-                  {a.result === 'saved'
-                    ? `${h.emoji} skipped ${h.name.toLowerCase()} — +${eur(h.value)}`
-                    : `${h.emoji} treated myself`}
-                </Bubble>
-              ) : (
-                <div className="chat-villain">
-                  <span className="chat-villain-name">
-                    {h.emoji} {h.name}
-                  </span>
-                  <div className="chat-villain-btns">
-                    <button className="chat-mini save" onClick={() => save(h)}>
-                      Skip +{eur(h.value)}
-                    </button>
-                    <button className="chat-mini treat" onClick={() => treat(h)}>
-                      Treat
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
-
-        {allDone && (
+        {/* Completion */}
+        {completed && (
           <Bubble who="app">
             That&rsquo;s it for today ✌️ You banked{' '}
-            <strong style={{ color: bankedToday >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
+            <strong
+              style={{
+                color: bankedToday >= 0 ? 'var(--accent)' : 'var(--danger)',
+              }}
+            >
               {eur(bankedToday)}
             </strong>
-            . See you tomorrow!
+            . Stay stoic — see you tomorrow!
           </Bubble>
         )}
       </div>
