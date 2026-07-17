@@ -273,19 +273,31 @@
   color: var(--accent);
   font-size: 12px;
 }
-.chat {
+.chat-screen {
+  position: fixed;
+  inset: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  z-index: 60;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
+  padding: 0 16px;
+}
+.chat-screen .chat-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 .chat-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 2px 12px;
-  position: sticky;
-  top: 0;
+  padding: calc(14px + env(safe-area-inset-top)) 2px 12px;
   background: var(--bg);
-  z-index: 2;
+  border-bottom: 1px solid var(--line);
 }
 .chat-back {
   font-size: 22px;
@@ -319,13 +331,13 @@
   font-size: 15px;
   line-height: 1.4;
 }
-.bubble.app {
+.bubble-app {
   align-self: flex-start;
   background: var(--bg-elev-2);
   border: 1px solid var(--line);
   border-bottom-left-radius: 6px;
 }
-.bubble.me {
+.bubble-me {
   align-self: flex-end;
   background: linear-gradient(180deg, var(--accent), var(--accent-2));
   color: var(--accent-ink);

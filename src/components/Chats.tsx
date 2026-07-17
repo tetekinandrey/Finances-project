@@ -43,7 +43,7 @@ export default function Chats({ go }: { go: (tab: string) => void }) {
       <button className="chat-list-item" onClick={() => setOpen(true)}>
         <span className="chat-avatar">{state.goal.emoji}</span>
         <span className="grow" style={{ textAlign: 'left', minWidth: 0 }}>
-          <span className="chat-list-title">{state.goal.name} savings</span>
+          <span className="chat-list-title">Savings daily check-up</span>
           <span className="chat-list-preview">
             {answeredToday >= active.length && active.length > 0
               ? "All done for today ✌️"
@@ -109,16 +109,16 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     .slice(-6)
 
   return (
-    <div className="fade-in chat">
+    <div className="fade-in chat-screen">
       <div className="chat-head">
         <button className="chat-back" onClick={onBack}>
           ←
         </button>
         <span className="chat-avatar sm">{state.goal.emoji}</span>
         <div>
-          <div className="chat-head-title">{state.goal.name} savings</div>
+          <div className="chat-head-title">Savings daily check-up</div>
           <div className="faint" style={{ fontSize: 12 }}>
-            your daily saving buddy
+            one question a day
           </div>
         </div>
       </div>
@@ -219,5 +219,5 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
 }
 
 function Bubble({ who, children }: { who: 'app' | 'me'; children: React.ReactNode }) {
-  return <div className={`bubble ${who}`}>{children}</div>
+  return <div className={`bubble bubble-${who}`}>{children}</div>
 }
