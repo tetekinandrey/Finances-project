@@ -70,6 +70,14 @@ export const addDays = (iso: string, days: number): Date => {
   return d
 }
 
+export const isoOf = (d: Date): string => {
+  const off = d.getTimezoneOffset()
+  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 10)
+}
+
+/** The next calendar day after an ISO date. */
+export const nextISO = (iso: string): string => isoOf(addDays(iso, 1))
+
 export const formatDate = (iso: string): string =>
   new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
     day: 'numeric',

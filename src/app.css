@@ -377,6 +377,9 @@
   font-size: 12px;
   color: var(--accent);
 }
+.chat-next {
+  margin-top: 4px;
+}
 .chat-villain {
   align-self: stretch;
   display: flex;

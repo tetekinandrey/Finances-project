@@ -96,4 +96,6 @@ export interface AppState {
   tokensPerEuro: number
   /** Log of on-chain transfers. */
   transfers: TxRecord[]
+  /** The day the check-up chat is currently on (advances as you simulate). */
+  simDate: string
 }

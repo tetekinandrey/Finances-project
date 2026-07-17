@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { eur, formatDate } from '../logic'
+import { balance, eur, formatDate } from '../logic'
 import { useTransfer } from '../useTransfer'
 import type { DayAction, Habit } from '../types'
 
@@ -31,7 +31,8 @@ export default function Chats({ go }: { go: (tab: string) => void }) {
 
   const active = state.habits.filter((h) => h.active)
   const answeredToday =
-    state.entries.find((e) => e.date === todayISOsafe())?.actions.length ?? 0
+    state.entries.find((e) => e.date === state.simDate)?.actions.length ?? 0
+  const allDone = answeredToday >= active.length && active.length > 0
 
   return (
     <div className="fade-in stack">
@@ -45,43 +46,38 @@ export default function Chats({ go }: { go: (tab: string) => void }) {
         <span className="grow" style={{ textAlign: 'left', minWidth: 0 }}>
           <span className="chat-list-title">Savings daily check-up</span>
           <span className="chat-list-preview">
-            {answeredToday >= active.length && active.length > 0
-              ? "All done for today ✌️"
+            {allDone
+              ? 'Done for now — tap for the next day'
               : 'Coffee or ' + state.goal.name + '? Tap to answer'}
           </span>
         </span>
-        <span className="chat-list-badge">
-          {answeredToday < active.length ? '●' : ''}
-        </span>
+        <span className="chat-list-badge">{allDone ? '' : '●'}</span>
       </button>
     </div>
   )
 }
 
-function todayISOsafe() {
-  const d = new Date()
-  const off = d.getTimezoneOffset()
-  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 10)
-}
-
 function SavingsThread({ onBack }: { onBack: () => void }) {
   const { state, dispatch, today } = useStore()
   const send = useTransfer()
+  const [askedMore, setAskedMore] = useState<'more' | 'none' | null>(null)
+
+  const day = state.simDate
+  const dayLabel = day === today ? 'Today' : formatDate(day)
 
   const active = state.habits.filter((h) => h.active)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
   const duelHabit = coffee ?? active[0]
   const others = active.filter((h) => h.id !== duelHabit?.id)
 
-  const entryFor = (date: string) => state.entries.find((e) => e.date === date)
-  const todayEntry = entryFor(today)
+  const dayEntry = state.entries.find((e) => e.date === day)
   const answerOf = (h: Habit): DayAction | undefined =>
-    todayEntry?.actions.find((a) => a.habitId === h.id)
+    dayEntry?.actions.find((a) => a.habitId === h.id)
 
   const save = (h: Habit) => {
     dispatch({
       type: 'RECORD',
-      date: today,
+      date: day,
       action: { habitId: h.id, result: 'saved', amount: h.value },
     })
     send(h.value, h.id)?.catch((e) => console.warn('transfer failed', e))
@@ -89,7 +85,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const treat = (h: Habit) => {
     dispatch({
       type: 'RECORD',
-      date: today,
+      date: day,
       action: {
         habitId: h.id,
         result: 'indulged',
@@ -98,10 +94,16 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     })
   }
 
-  const bankedToday = todayEntry?.actions.reduce((s, a) => s + a.amount, 0) ?? 0
+  const bankedToday = dayEntry?.actions.reduce((s, a) => s + a.amount, 0) ?? 0
+  const reached =
+    state.goal.targetPrice > 0 && balance(state) >= state.goal.targetPrice
+
+  const nextDay = () => {
+    setAskedMore(null)
+    dispatch({ type: 'ADVANCE_DAY' })
+  }
 
   // Conversational flow state for today.
-  const [askedMore, setAskedMore] = useState<'more' | 'none' | null>(null)
   const duelAnswer = duelHabit ? answerOf(duelHabit) : undefined
   const duelAnswered = !!duelAnswer
   const anyOtherAnswered = others.some((h) => answerOf(h))
@@ -111,9 +113,9 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     duelAnswered &&
     (others.length === 0 || moreState === 'none' || othersAllAnswered)
 
-  // Past days (most recent 6, excluding today) for scrollback.
+  // Past days (before the current sim day) for scrollback.
   const past = state.entries
-    .filter((e) => e.date !== today)
+    .filter((e) => e.date < day)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-6)
 
@@ -152,7 +154,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           )
         })}
 
-        <div className="chat-day">Today</div>
+        <div className="chat-day">{dayLabel}</div>
 
         {/* Q1 — what's up today? */}
         {duelHabit && (
@@ -255,9 +257,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
         {/* Completion */}
         {completed && (
           <>
-            <Bubble who="app">
-              That&rsquo;s it for today ✌️ Stay stoic — see you tomorrow!
-            </Bubble>
+            <Bubble who="app">That&rsquo;s it for {dayLabel.toLowerCase()} ✌️</Bubble>
             <Bubble who="app">
               {bankedToday > 0 ? (
                 <>
@@ -273,6 +273,17 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                 <>➖ Nothing moved today — but no slip-ups either.</>
               )}
             </Bubble>
+
+            {reached ? (
+              <Bubble who="app">
+                🎉 You&rsquo;ve saved the full {eur(state.goal.targetPrice)} —{' '}
+                {state.goal.name} unlocked! 🔓
+              </Bubble>
+            ) : (
+              <button className="btn primary block chat-next" onClick={nextDay}>
+                → Next day
+              </button>
+            )}
           </>
         )}
       </div>

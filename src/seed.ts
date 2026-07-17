@@ -1,4 +1,5 @@
 import type { AppState, Habit } from './types'
+import { todayISO } from './logic'
 
 export const uid = (): string =>
   'id-' + Math.random().toString(36).slice(2, 10)
@@ -63,6 +64,7 @@ export const defaultState: AppState = {
   vault: { address: '', mnemonic: '' },
   tokensPerEuro: 0.1,
   transfers: [],
+  simDate: todayISO(),
 }
 
 /** A well-known Polkadot test address, used for the "demo account" button. */

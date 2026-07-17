@@ -16,7 +16,7 @@ import type {
   Vault,
 } from './types'
 import { defaultState } from './seed'
-import { findEntry, todayISO } from './logic'
+import { findEntry, nextISO, todayISO } from './logic'
 
 const STORAGE_KEY = 'finances-savings-v1'
 
@@ -33,6 +33,7 @@ type Action =
   | { type: 'SET_VAULT'; vault: Vault }
   | { type: 'ADD_TRANSFER'; tx: TxRecord }
   | { type: 'UPDATE_TRANSFER'; hash: string; status: TxStatus }
+  | { type: 'ADVANCE_DAY' }
   | { type: 'RESET' }
   | { type: 'IMPORT'; state: AppState }
 
@@ -90,6 +91,8 @@ function reducer(state: AppState, action: Action): AppState {
       }
     case 'SET_VAULT':
       return { ...state, vault: action.vault }
+    case 'ADVANCE_DAY':
+      return { ...state, simDate: nextISO(state.simDate) }
     case 'ADD_TRANSFER':
       return { ...state, transfers: [action.tx, ...state.transfers] }
     case 'UPDATE_TRANSFER':
@@ -114,7 +117,12 @@ function load(): AppState {
     if (!raw) return defaultState
     const parsed = JSON.parse(raw) as Partial<AppState>
     // Existing installs predate onboarding — treat them as already set up.
-    return { ...defaultState, ...parsed, onboarded: parsed.onboarded ?? true }
+    return {
+      ...defaultState,
+      ...parsed,
+      onboarded: parsed.onboarded ?? true,
+      simDate: parsed.simDate || todayISO(),
+    }
   } catch {
     return defaultState
   }
