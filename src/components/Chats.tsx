@@ -119,11 +119,17 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     return !!a && (a.result === 'saved' || a.worthIt != null)
   }
   const resolvedOthers = others.filter(villainResolved)
-  const unresolvedCount = others.length - resolvedOthers.length
+  // An indulged villain awaiting its in-chat "worth it?" answer.
+  const pendingWorth = others.find((h) => {
+    const a = answerOf(h)
+    return !!a && a.result === 'indulged' && a.worthIt == null
+  })
+  const unansweredCount = others.filter((h) => !answerOf(h)).length
   const saidNo = askedMore === 'none'
   const completed =
     duelResolved &&
-    (others.length === 0 || saidNo || unresolvedCount === 0)
+    !pendingWorth &&
+    (others.length === 0 || saidNo || unansweredCount === 0)
 
   const closeVillains = () => setShowVillains(false)
 
@@ -255,9 +261,32 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
               )
             })}
 
-            {saidNo ? (
+            {pendingWorth ? (
+              <>
+                <Bubble who="me">
+                  {pendingWorth.emoji} had {pendingWorth.name.toLowerCase()}
+                </Bubble>
+                <Bubble who="app">
+                  Was that {pendingWorth.name.toLowerCase()} worth it?
+                </Bubble>
+                <div className="chat-choices">
+                  <button
+                    className="chat-choice save"
+                    onClick={() => treat(pendingWorth, true)}
+                  >
+                    💚 Worth it
+                  </button>
+                  <button
+                    className="chat-choice treat"
+                    onClick={() => treat(pendingWorth, false)}
+                  >
+                    😕 Not really
+                  </button>
+                </div>
+              </>
+            ) : saidNo ? (
               <Bubble who="me">No, that&rsquo;s it for today</Bubble>
-            ) : unresolvedCount > 0 ? (
+            ) : unansweredCount > 0 ? (
               <div className="chat-choices">
                 <button
                   className="chat-choice treat"
@@ -320,54 +349,33 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
             Saved adds to your vault. Had it = no funds moved.
           </div>
           <div className="stack" style={{ marginTop: 14 }}>
-            {others.filter((h) => !villainResolved(h)).map((h) => {
-              const a = answerOf(h)
-              const askingWorth = a && a.result === 'indulged'
-              return (
-                <div key={h.id} className="chat-villain">
-                  <span className="chat-villain-name">
-                    {h.emoji} {askingWorth ? `${h.name} — worth it?` : h.name}
-                  </span>
-                  {askingWorth ? (
-                    <div className="chat-villain-btns">
-                      <button
-                        className="chat-mini save"
-                        onClick={() => {
-                          treat(h, true)
-                          setShowVillains(false)
-                        }}
-                      >
-                        💚 Worth it
-                      </button>
-                      <button
-                        className="chat-mini treat"
-                        onClick={() => {
-                          treat(h, false)
-                          setShowVillains(false)
-                        }}
-                      >
-                        😕 Not really
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="chat-villain-btns">
-                      <button
-                        className="chat-mini save"
-                        onClick={() => {
-                          save(h)
-                          setShowVillains(false)
-                        }}
-                      >
-                        Save +{eur(h.value)}
-                      </button>
-                      <button className="chat-mini treat" onClick={() => treat(h)}>
-                        I had it
-                      </button>
-                    </div>
-                  )}
+            {others.filter((h) => !answerOf(h)).map((h) => (
+              <div key={h.id} className="chat-villain">
+                <span className="chat-villain-name">
+                  {h.emoji} {h.name}
+                </span>
+                <div className="chat-villain-btns">
+                  <button
+                    className="chat-mini save"
+                    onClick={() => {
+                      save(h)
+                      setShowVillains(false)
+                    }}
+                  >
+                    Save +{eur(h.value)}
+                  </button>
+                  <button
+                    className="chat-mini treat"
+                    onClick={() => {
+                      treat(h)
+                      setShowVillains(false)
+                    }}
+                  >
+                    I had it
+                  </button>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
           <button
             className="btn ghost block"
