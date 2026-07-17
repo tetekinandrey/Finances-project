@@ -22,6 +22,8 @@ const STORAGE_KEY = 'finances-savings-v1'
 
 type Action =
   | { type: 'RECORD'; date: string; action: DayAction }
+  | { type: 'LOG_ACTION'; date: string; action: DayAction }
+  | { type: 'SET_WORTH'; date: string; id: string; worthIt: boolean }
   | { type: 'CLEAR_DAY_HABIT'; date: string; habitId: string }
   | { type: 'UPDATE_GOAL'; goal: Partial<Goal> }
   | { type: 'ADD_HABIT'; habit: Habit }
@@ -40,11 +42,13 @@ type Action =
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'RECORD': {
+      // The single daily answer for a habit (no id) — replace it, but keep any
+      // repeatable occurrence logs (those carry an id).
       const entries = state.entries.slice()
       const existing = findEntry(entries, action.date)
       if (existing) {
         const actions = existing.actions.filter(
-          (a) => a.habitId !== action.action.habitId,
+          (a) => a.id || a.habitId !== action.action.habitId,
         )
         actions.push(action.action)
         const idx = entries.indexOf(existing)
@@ -53,6 +57,34 @@ function reducer(state: AppState, action: Action): AppState {
         entries.push({ date: action.date, actions: [action.action] })
       }
       entries.sort((a, b) => a.date.localeCompare(b.date))
+      return { ...state, entries }
+    }
+    case 'LOG_ACTION': {
+      // Append a repeatable occurrence (villains) without replacing anything.
+      const entries = state.entries.slice()
+      const existing = findEntry(entries, action.date)
+      if (existing) {
+        entries[entries.indexOf(existing)] = {
+          ...existing,
+          actions: [...existing.actions, action.action],
+        }
+      } else {
+        entries.push({ date: action.date, actions: [action.action] })
+      }
+      entries.sort((a, b) => a.date.localeCompare(b.date))
+      return { ...state, entries }
+    }
+    case 'SET_WORTH': {
+      const entries = state.entries.map((e) =>
+        e.date === action.date
+          ? {
+              ...e,
+              actions: e.actions.map((a) =>
+                a.id === action.id ? { ...a, worthIt: action.worthIt } : a,
+              ),
+            }
+          : e,
+      )
       return { ...state, entries }
     }
     case 'CLEAR_DAY_HABIT': {

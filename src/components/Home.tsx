@@ -3,7 +3,7 @@ import { balance, estimates, eur, isUnlocked } from '../logic'
 import { useTransfer } from '../useTransfer'
 import type { Habit } from '../types'
 
-export default function Home({ go }: { go: (tab: string) => void }) {
+export default function Home() {
   const { state, dispatch, today } = useStore()
   const send = useTransfer()
   const bal = balance(state)
@@ -19,12 +19,9 @@ export default function Home({ go }: { go: (tab: string) => void }) {
 
   // The duel: the coffee habit (or the first active one) vs. the goal.
   const duelHabit = coffee ?? state.habits.find((h) => h.active)
-  const otherActive = state.habits.filter(
-    (h) => h.active && h.id !== duelHabit?.id,
-  )
   const todayEntry = state.entries.find((e) => e.date === today)
   const duelAnswer = duelHabit
-    ? todayEntry?.actions.find((a) => a.habitId === duelHabit.id)
+    ? todayEntry?.actions.find((a) => a.habitId === duelHabit.id && !a.id)
     : undefined
 
   const chooseGoal = () => {
@@ -130,11 +127,6 @@ export default function Home({ go }: { go: (tab: string) => void }) {
         </div>
       )}
 
-      {otherActive.length > 0 && (
-        <button className="btn ghost block" onClick={() => go('checkin')}>
-          Coffee wasn&rsquo;t your only villain today →
-        </button>
-      )}
     </div>
   )
 }

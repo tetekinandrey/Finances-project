@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { balance, eur, formatDate } from '../logic'
+import { uid } from '../seed'
 import { useTransfer } from '../useTransfer'
-import type { DayAction, Habit } from '../types'
+import type { Habit } from '../types'
 
 export default function Chats({ go }: { go: (tab: string) => void }) {
   const { state } = useStore()
@@ -69,12 +70,16 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const active = state.habits.filter((h) => h.active)
   const coffee = state.habits.find((h) => h.id === 'coffee' && h.active)
   const duelHabit = coffee ?? active[0]
-  const others = active.filter((h) => h.id !== duelHabit?.id)
+  const habitById = (id: string) => state.habits.find((h) => h.id === id)
 
   const dayEntry = state.entries.find((e) => e.date === day)
-  const answerOf = (h: Habit): DayAction | undefined =>
-    dayEntry?.actions.find((a) => a.habitId === h.id)
+  // The duel's single daily answer (no id); villains are repeatable occurrences.
+  const duelAnswer = dayEntry?.actions.find(
+    (a) => a.habitId === duelHabit?.id && !a.id,
+  )
+  const occurrences = dayEntry?.actions.filter((a) => !!a.id) ?? []
 
+  // Duel (Q1) — single answer per day.
   const save = (h: Habit) => {
     dispatch({
       type: 'RECORD',
@@ -84,7 +89,6 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     send(h.value, h.id)?.catch((e) => console.warn('transfer failed', e))
   }
   const treat = (h: Habit, worthIt?: boolean | null) => {
-    // Indulging is guilt-free: no funds move to the vault (nor out of it).
     dispatch({
       type: 'RECORD',
       date: day,
@@ -97,6 +101,26 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     })
   }
 
+  // Villains — repeatable occurrences (you can log the same one twice).
+  const logVillain = (h: Habit, result: 'saved' | 'indulged') => {
+    dispatch({
+      type: 'LOG_ACTION',
+      date: day,
+      action: {
+        id: uid(),
+        habitId: h.id,
+        result,
+        amount: result === 'saved' ? h.value : 0,
+        worthIt: result === 'indulged' ? null : undefined,
+      },
+    })
+    if (result === 'saved') {
+      send(h.value, h.id)?.catch((e) => console.warn('transfer failed', e))
+    }
+  }
+  const setOccWorth = (id: string, worthIt: boolean) =>
+    dispatch({ type: 'SET_WORTH', date: day, id, worthIt })
+
   const bankedToday = dayEntry?.actions.reduce((s, a) => s + a.amount, 0) ?? 0
   const reached =
     state.goal.targetPrice > 0 && balance(state) >= state.goal.targetPrice
@@ -108,28 +132,16 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   }
 
   // Conversational flow state for today.
-  const duelAnswer = duelHabit ? answerOf(duelHabit) : undefined
   const duelAnswered = !!duelAnswer
-  // Indulging needs the "was it good?" follow-up before we move on.
   const duelResolved =
     duelAnswered &&
     (duelAnswer!.result === 'saved' || duelAnswer!.worthIt != null)
-  const villainResolved = (h: Habit) => {
-    const a = answerOf(h)
-    return !!a && (a.result === 'saved' || a.worthIt != null)
-  }
-  const resolvedOthers = others.filter(villainResolved)
-  // An indulged villain awaiting its in-chat "worth it?" answer.
-  const pendingWorth = others.find((h) => {
-    const a = answerOf(h)
-    return !!a && a.result === 'indulged' && a.worthIt == null
-  })
-  const unansweredCount = others.filter((h) => !answerOf(h)).length
+  // An indulged occurrence awaiting its in-chat "worth it?" answer.
+  const pendingOcc = occurrences.find(
+    (a) => a.result === 'indulged' && a.worthIt == null,
+  )
   const saidNo = askedMore === 'none'
-  const completed =
-    duelResolved &&
-    !pendingWorth &&
-    (others.length === 0 || saidNo || unansweredCount === 0)
+  const completed = duelResolved && saidNo && !pendingOcc
 
   const closeVillains = () => setShowVillains(false)
 
@@ -239,19 +251,23 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           </>
         )}
 
-        {/* Q2 — any other villains today? (only after Q1 is resolved) */}
-        {duelResolved && others.length > 0 && (
+        {/* Q2 — log more villains as they come up (only after Q1 is resolved) */}
+        {duelResolved && (
           <>
-            <Bubble who="app">Any other villains today? 😈</Bubble>
+            <Bubble who="app">
+              Post another villain if one comes to mind today 😈
+            </Bubble>
 
-            {resolvedOthers.map((h) => {
-              const a = answerOf(h)!
+            {occurrences.map((a) => {
+              const h = habitById(a.habitId)
+              if (!h) return null
+              const pending = a.result === 'indulged' && a.worthIt == null
               return (
-                <Bubble key={h.id} who="me">
+                <Bubble key={a.id} who="me">
                   {a.result === 'saved'
-                    ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(h.value)}`
+                    ? `${h.emoji} saved on ${h.name.toLowerCase()} — +${eur(a.amount)}`
                     : `${h.emoji} had ${h.name.toLowerCase()}${
-                        a.worthIt == null
+                        pending
                           ? ''
                           : a.worthIt
                             ? ' — worth it 💚'
@@ -261,47 +277,45 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
               )
             })}
 
-            {pendingWorth ? (
+            {pendingOcc ? (
               <>
-                <Bubble who="me">
-                  {pendingWorth.emoji} had {pendingWorth.name.toLowerCase()}
-                </Bubble>
                 <Bubble who="app">
-                  Was that {pendingWorth.name.toLowerCase()} worth it?
+                  Was that{' '}
+                  {habitById(pendingOcc.habitId)?.name.toLowerCase()} worth it?
                 </Bubble>
                 <div className="chat-choices">
                   <button
                     className="chat-choice save"
-                    onClick={() => treat(pendingWorth, true)}
+                    onClick={() => setOccWorth(pendingOcc.id!, true)}
                   >
                     💚 Worth it
                   </button>
                   <button
                     className="chat-choice treat"
-                    onClick={() => treat(pendingWorth, false)}
+                    onClick={() => setOccWorth(pendingOcc.id!, false)}
                   >
                     😕 Not really
                   </button>
                 </div>
               </>
             ) : saidNo ? (
-              <Bubble who="me">No, that&rsquo;s it for today</Bubble>
-            ) : unansweredCount > 0 ? (
+              <Bubble who="me">That&rsquo;s it for today ✌️</Bubble>
+            ) : (
               <div className="chat-choices">
                 <button
                   className="chat-choice treat"
                   onClick={() => setAskedMore('none')}
                 >
-                  ✌️ No, that&rsquo;s it
+                  ✌️ That&rsquo;s it for today
                 </button>
                 <button
                   className="chat-choice save"
                   onClick={() => setShowVillains(true)}
                 >
-                  😈 There&rsquo;s more
+                  😈 Add a villain
                 </button>
               </div>
-            ) : null}
+            )}
           </>
         )}
 
@@ -349,7 +363,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
             Saved adds to your vault. Had it = no funds moved.
           </div>
           <div className="stack" style={{ marginTop: 14 }}>
-            {others.filter((h) => !answerOf(h)).map((h) => (
+            {active.map((h) => (
               <div key={h.id} className="chat-villain">
                 <span className="chat-villain-name">
                   {h.emoji} {h.name}
@@ -358,7 +372,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                   <button
                     className="chat-mini save"
                     onClick={() => {
-                      save(h)
+                      logVillain(h, 'saved')
                       setShowVillains(false)
                     }}
                   >
@@ -367,7 +381,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                   <button
                     className="chat-mini treat"
                     onClick={() => {
-                      treat(h)
+                      logVillain(h, 'indulged')
                       setShowVillains(false)
                     }}
                   >

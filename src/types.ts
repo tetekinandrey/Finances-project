@@ -44,6 +44,9 @@ export interface Account {
 
 /** One answered habit on a given day. */
 export interface DayAction {
+  /** Unique id for repeatable "occurrence" logs (villains). Absent for the
+   *  single daily duel/classic answer. */
+  id?: string
   habitId: string
   result: ActionResult
   /** Signed euros: +value when saved, -value when indulged. */

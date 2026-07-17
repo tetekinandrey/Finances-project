@@ -1,22 +1,14 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import Home from './Home'
-import CheckIn from './CheckIn'
-import History from './History'
-import Chain from './Chain'
-import Habits from './Habits'
-import GoalSettings from './GoalSettings'
+import Settings from './Settings'
 import Onboarding from './Onboarding'
 
-type OldTab = 'home' | 'checkin' | 'history' | 'chain' | 'habits' | 'goal'
+type OldTab = 'home' | 'settings'
 
 const NAV: { id: OldTab; label: string; ico: string }[] = [
   { id: 'home', label: 'Home', ico: '🏠' },
-  { id: 'checkin', label: 'Check-in', ico: '✅' },
-  { id: 'history', label: 'History', ico: '📈' },
-  { id: 'chain', label: 'Chain', ico: '🔗' },
-  { id: 'habits', label: 'Habits', ico: '⚙️' },
-  { id: 'goal', label: 'Goal', ico: '🎯' },
+  { id: 'settings', label: 'Settings', ico: '⚙️' },
 ]
 
 export default function BrowsedApp({ onClose }: { onClose: () => void }) {
@@ -47,15 +39,10 @@ export default function BrowsedApp({ onClose }: { onClose: () => void }) {
                   <span className="dot" />
                   Vault
                 </div>
-                <span className="pill">classic</span>
               </div>
 
-              {tab === 'home' && <Home go={(t) => setTab(t as OldTab)} />}
-              {tab === 'checkin' && <CheckIn />}
-              {tab === 'history' && <History />}
-              {tab === 'chain' && <Chain />}
-              {tab === 'habits' && <Habits />}
-              {tab === 'goal' && <GoalSettings />}
+              {tab === 'home' && <Home />}
+              {tab === 'settings' && <Settings />}
             </div>
           </div>
 
