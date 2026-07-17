@@ -85,7 +85,7 @@ select:focus {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100%;
-  padding: 0 16px 110px;
+  padding: calc(18px + env(safe-area-inset-top)) 16px 110px;
   position: relative;
 }
 
