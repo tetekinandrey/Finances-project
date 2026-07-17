@@ -62,6 +62,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const send = useTransfer()
   const [askedMore, setAskedMore] = useState<'more' | 'none' | null>(null)
   const [showVillains, setShowVillains] = useState(false)
+  const [villainsDone, setVillainsDone] = useState(false)
 
   const day = state.simDate
   const dayLabel = day === today ? 'Today' : formatDate(day)
@@ -102,6 +103,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const nextDay = () => {
     setAskedMore(null)
     setShowVillains(false)
+    setVillainsDone(false)
     dispatch({ type: 'ADVANCE_DAY' })
   }
 
@@ -113,11 +115,23 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
   const moreState = askedMore ?? (anyOtherAnswered ? 'more' : null)
   const completed =
     duelAnswered &&
-    (others.length === 0 || moreState === 'none' || othersAllAnswered)
+    (others.length === 0 ||
+      moreState === 'none' ||
+      villainsDone ||
+      othersAllAnswered)
 
-  // Close the villain modal once every option has been answered.
+  // Closing the villain sheet finishes the villain phase (if any were picked).
+  const closeVillains = () => {
+    setShowVillains(false)
+    if (anyOtherAnswered) setVillainsDone(true)
+  }
+
+  // Auto-finish once every option has been answered.
   useEffect(() => {
-    if (showVillains && othersAllAnswered) setShowVillains(false)
+    if (showVillains && othersAllAnswered) {
+      setShowVillains(false)
+      setVillainsDone(true)
+    }
   }, [showVillains, othersAllAnswered])
 
   // Past days (before the current sim day) for scrollback.
@@ -209,10 +223,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                 </button>
                 <button
                   className="chat-choice save"
-                  onClick={() => {
-                    setAskedMore('more')
-                    setShowVillains(true)
-                  }}
+                  onClick={() => setShowVillains(true)}
                 >
                   😈 There&rsquo;s more
                 </button>
@@ -225,7 +236,6 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
 
             {moreState === 'more' && (
               <>
-                <Bubble who="me">There&rsquo;s more…</Bubble>
                 {others
                   .filter((h) => answerOf(h))
                   .map((h) => {
@@ -238,7 +248,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
                       </Bubble>
                     )
                   })}
-                {!othersAllAnswered && (
+                {!showVillains && !othersAllAnswered && !villainsDone && (
                   <button
                     className="btn block chat-next"
                     onClick={() => setShowVillains(true)}
@@ -287,7 +297,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
     </div>
 
     {showVillains && (
-      <div className="sheet-backdrop" onClick={() => setShowVillains(false)}>
+      <div className="sheet-backdrop" onClick={closeVillains}>
         <div className="sheet" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-handle" />
           <div className="sheet-title">Which villains today? 😈</div>
@@ -327,7 +337,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
           <button
             className="btn primary block"
             style={{ marginTop: 16 }}
-            onClick={() => setShowVillains(false)}
+            onClick={closeVillains}
           >
             Done
           </button>
