@@ -215,6 +215,7 @@ function SavingsThread({ onBack }: { onBack: () => void }) {
             {moreState === 'more' && (
               <>
                 <Bubble who="me">There&rsquo;s more…</Bubble>
+                <Bubble who="app">Specify your villain 👇</Bubble>
                 {others.map((h) => {
                   const a = answerOf(h)
                   return (
