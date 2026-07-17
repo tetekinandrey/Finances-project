@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { balance, eur, progress } from '../logic'
-import { shortAddress } from '../seed'
 import GoalDetail from './GoalDetail'
 
 export default function Pocket({ go }: { go: (tab: string) => void }) {
@@ -49,9 +48,6 @@ export default function Pocket({ go }: { go: (tab: string) => void }) {
           <span className="wallet-chip">🪪</span>
         </div>
         <div className="wallet-id-name">{name}</div>
-        <div className="wallet-sub">
-          {account.connected ? shortAddress(account.address) : 'Not connected'}
-        </div>
       </div>
 
       {/* Main account */}
@@ -62,9 +58,6 @@ export default function Pocket({ go }: { go: (tab: string) => void }) {
         </div>
         <div className="wallet-balance">
           {account.balanceChecked ? eur(account.balance) : '—'}
-        </div>
-        <div className="wallet-sub">
-          {account.connected ? shortAddress(account.address) : 'Set up in Settings'}
         </div>
       </div>
 
